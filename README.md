@@ -1,8 +1,8 @@
-Microservices eCommerce Backend (Catalog Service)
+Microservices eCommerce Backend 
 
 This is a personal learning project focused on building a scalable backend
 using ASP.NET Core and microservices architecture.  
-Currently, the project includes the Catalog microservice, designed following
+Currently, the project includes the Catalog & Order microservice, designed following
 Clean Architecture and DDD principles.
 
 
@@ -83,7 +83,7 @@ Project Status:
 
 Planned improvements:
 
- Additional microservices (Ordering, Basket)
+ Additional microservices (Payment, Identity)
  Message broker integration
  API Gateway
  Improved event-driven communication
