@@ -1,0 +1,26 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Test results
+**/TestResults/
+
+# User-specific / IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Git
+.git/
+.gitignore
+
+# Docker / CI artifacts
+**/node_modules/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

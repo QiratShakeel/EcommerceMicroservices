@@ -1,0 +1,78 @@
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Visual Studio
+# =========================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Build outputs
+# =========================
+**/bin/
+**/obj/
+
+# =========================
+# Rider / VS Code
+# =========================
+.idea/
+.vs/
+**/.vs/
+
+# =========================
+# .NET Core
+# =========================
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+**/logs/
+
+# =========================
+# Environment / Secrets
+# =========================
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.Local.json
+.env
+.env.*
+
+# =========================
+# Docker
+# =========================
+**/docker-compose.override.yml
+
+# =========================
+# EF Core
+# =========================
+**/Migrations/*.cs
+!**/Migrations/*InitialCatalogMigration*.cs
+!**/Migrations/*InitialCreate*.cs
+**/Migrations/*.Designer.cs
+**/Migrations/*.Snapshot.cs
+
+# =========================
+# Node (if any frontend)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# =========================
+# Test Results
+# =========================
+TestResults/
+coverage/

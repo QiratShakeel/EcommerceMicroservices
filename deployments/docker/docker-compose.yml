@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  catalogservice:
+    build:
+      context: ../../
+      dockerfile: deployments/docker/Dockerfiles/CatalogService.Dockerfile
+    container_name: catalogservice
+    ports:
+      - "5000:5000"
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__CatalogConnection=Server=DESKTOP-O1E4QQ7\\SQLEXPRESS;Database=OrderDb;User Id=sa;Password=123;
+
+  orderservice:
+    build:
+      context: ../../
+      dockerfile: deployments/docker/Dockerfiles/OrderService.Dockerfile
+    container_name: orderservice
+    ports:
+      - "5001:5001"
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__OrdersConnection=Server=DESKTOP-O1E4QQ7\\SQLEXPRESS;Database=OrderDb;User Id=sa;Password=123;
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  sqlserver:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    environment:
+      SA_PASSWORD: "123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+volumes:
+  sqlserver-data:
