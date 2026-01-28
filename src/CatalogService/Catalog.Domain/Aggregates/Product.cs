@@ -12,27 +12,20 @@ namespace Ecommerce.Catalog.Domain.Aggregates
     {
         // ======== PRIVATE FIELDS ========
         private readonly List<ProductImage> _images = new();
-        //private readonly List<int> _categoryIds = new();
         private readonly List<ProductCategory> _productCategories = new();
-
-        // ======== PROPERTIES ========
-        //public int Id { get; private set; }
         public string Name { get; private set; }
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
         public string SKU { get; private set; }
         public Money Price { get; private set; }
         public ProductStatus Status { get; private set; } = ProductStatus.Draft;
         public ProductInventory Inventory { get; private set; }
 
-        // Readonly collections
         public IReadOnlyCollection<ProductImage> Images => _images.AsReadOnly();
-        //public IReadOnlyCollection<int> CategoryIds => _categoryIds.AsReadOnly();
         public IReadOnlyCollection<ProductCategory> Categories => _productCategories.AsReadOnly();
 
         public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
         public DateTime? UpdatedDate { get; private set; }
 
-        // ======== CONSTRUCTOR ========
         public Product() { } //by EF
         public Product(string name, string sku, Money price, string? description = null)
         {
@@ -88,9 +81,9 @@ namespace Ecommerce.Catalog.Domain.Aggregates
         }
 
         // ---------- Categories ----------
-        public void AddCategory(int categoryId)
+        public void AddCategory(Guid categoryId)
         {
-            if (categoryId <= 0)
+            if (categoryId == Guid.Empty)
                 throw new InvalidProductCategoryException();
 
             if (_productCategories.Any(x => x.CategoryId == categoryId))
@@ -102,7 +95,7 @@ namespace Ecommerce.Catalog.Domain.Aggregates
             AddDomainEvent(new ProductCategoryAssignedDomainEvent(Id, categoryId));
         }
 
-        public void RemoveCategory(int categoryId)
+        public void RemoveCategory(Guid categoryId)
         {
             var existing = _productCategories
                 .FirstOrDefault(x => x.CategoryId == categoryId);
@@ -115,12 +108,12 @@ namespace Ecommerce.Catalog.Domain.Aggregates
         }
 
 
-        public void SetCategories(IEnumerable<int> categoryIds)
+        public void SetCategories(IEnumerable<Guid> categoryIds)
         {
             if (categoryIds == null || !categoryIds.Any())
                 throw new ArgumentException("Product must have at least one category.");
 
-            if (categoryIds.Any(id => id <= 0))
+            if (categoryIds.Any(id => id == Guid.Empty))
                 throw new ArgumentException("Invalid category ID found.");
 
             _productCategories.Clear();

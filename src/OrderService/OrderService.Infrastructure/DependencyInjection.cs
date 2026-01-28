@@ -20,8 +20,17 @@ namespace Ecommerce.Orders.Infrastructure
         {
             // DbContext
             services.AddDbContext<OrdersDbContext>(options =>
+            {
                 options.UseSqlServer(
-                    config.GetConnectionString("OrdersConnection")));
+                    config.GetConnectionString("OrdersConnection"),
+                    sql =>
+                    {
+                        sql.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorNumbersToAdd: null);
+                    });
+            });
 
             // Unit of Work
             services.AddScoped<IUnitOfWork, UnitOfWork<OrdersDbContext>>();

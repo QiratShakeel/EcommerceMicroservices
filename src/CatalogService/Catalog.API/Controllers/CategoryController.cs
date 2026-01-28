@@ -23,8 +23,8 @@ namespace Ecommerce.Catalog.API.Controllers
             return Ok(category);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
             var category = await _mediator.Send(new GetCategoryByIdQuery(id));
             if (category == null) return NotFound();
@@ -35,11 +35,12 @@ namespace Ecommerce.Catalog.API.Controllers
         public async Task<IActionResult> Create(CreateCategoryCommand command)
         {
             var categoryId = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetById), new { id = categoryId });
+            var category = await _mediator.Send(new GetCategoryByIdQuery(categoryId));
+            return CreatedAtAction(actionName: nameof(GetById), controllerName: "Category", routeValues: new { id = categoryId },value: category );// value:or the category object if you want
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateCategoryCommand command)
+        public async Task<IActionResult> Update(Guid id, UpdateCategoryCommand command)
         {
             if (id != command.CategoryId) return BadRequest();
             var category = await _mediator.Send(command);
@@ -48,7 +49,7 @@ namespace Ecommerce.Catalog.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id, DeleteCategoryCommand command)
+        public async Task<IActionResult> Delete(Guid id, DeleteCategoryCommand command)
         {
             if (id != command.categoryId) return BadRequest();
             var category = await _mediator.Send(command);

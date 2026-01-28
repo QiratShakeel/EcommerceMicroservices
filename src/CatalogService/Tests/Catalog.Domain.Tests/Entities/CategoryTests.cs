@@ -27,11 +27,11 @@ namespace Catalog.Domain.Tests.Entities
         public void UpdateCategory_ShouldChangeValues()
         {
             var category = new Category("Old", "Old Desc");
-            category.UpdateCategory("New", "New Desc", 2);
+            category.UpdateCategory("New", "New Desc", category.Id);
 
             Assert.Equal("New", category.Name);
             Assert.Equal("New Desc", category.Description);
-            Assert.Equal(2, category.ParentCategoryId);
+            Assert.Equal(category.Id, category.ParentCategoryId);
         }
 
         [Fact]

@@ -5,6 +5,7 @@ using BuildingBlocks.Shared.Infrastructure;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.DataAnnotations;
 
 namespace BuildingBlocks.Shared.Extensions
 {
@@ -21,3 +22,5 @@ namespace BuildingBlocks.Shared.Extensions
         }
     }
 }
+
+//Validation → Logging → Transaction → Handler mediatr pipeline run

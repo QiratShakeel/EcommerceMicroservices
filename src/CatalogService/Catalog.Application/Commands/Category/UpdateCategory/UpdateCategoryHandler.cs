@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ecommerce.Catalog.Application.Commands
 {
-    public class UpdatebCategoryHandler : IRequestHandler<UpdateCategoryCommand, int>
+    public class UpdatebCategoryHandler : IRequestHandler<UpdateCategoryCommand, Guid>
     {
         private readonly ICategoryRepository _repository;
         public UpdatebCategoryHandler(ICategoryRepository repository)
@@ -14,7 +14,7 @@ namespace Ecommerce.Catalog.Application.Commands
             _repository = repository;
             //_mapper = mapper;
         }
-        public async Task<int> Handle(UpdateCategoryCommand cmd, CancellationToken ct)
+        public async Task<Guid> Handle(UpdateCategoryCommand cmd, CancellationToken ct)
         {
             var category = await _repository.GetAsync(cmd.CategoryId, ct);
             if (category == null)

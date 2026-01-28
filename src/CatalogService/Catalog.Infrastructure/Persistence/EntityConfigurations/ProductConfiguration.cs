@@ -31,7 +31,7 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Configurations
             builder.OwnsOne(p => p.Inventory, inv =>
             {
                 inv.Property(x => x.StockQuantity).IsRequired();
-                inv.Property(x => x.ReservedQuantity); //false krne hai isko wh khrh ha int property isrequired null nh hskti
+                inv.Property(x => x.ReservedQuantity).IsRequired(false); //false krne hai isko wh khrh ha int property isrequired null nh hskti
                 inv.Property(x => x.WarehouseLocation).HasMaxLength(200).IsRequired(false);
             });
 
@@ -39,7 +39,7 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Configurations
 
             builder.Property(p => p.UpdatedDate);
 
-            builder.HasMany<ProductCategory>("_productCategories").WithOne().HasForeignKey(pc => pc.ProductId).OnDelete(DeleteBehavior.Cascade);
+            //builder.HasMany<ProductCategory>("_productCategories").WithOne().HasForeignKey(pc => pc.ProductId).OnDelete(DeleteBehavior.Cascade);
             builder.OwnsMany(p => p.Images, img =>
             {
                 img.ToTable("ProductImages"); // optional but recommended
@@ -56,7 +56,7 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Configurations
                 img.HasKey("Id");
             });
 
-            builder.Navigation("_productCategories").UsePropertyAccessMode(PropertyAccessMode.Field);
+            //builder.Navigation("_productCategories").UsePropertyAccessMode(PropertyAccessMode.Field);
             builder.Navigation(p => p.Images)?.UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }

@@ -7,43 +7,58 @@ services:
       dockerfile: deployments/docker/Dockerfiles/CatalogService.Dockerfile
     container_name: catalogservice
     ports:
-      - "5000:5000"
+      - "5108:5000"
     depends_on:
-      - rabbitmq
-      - sqlserver
+      - rabbitmq          
+      - sqlserver          
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__CatalogConnection=Server=DESKTOP-O1E4QQ7\\SQLEXPRESS;Database=OrderDb;User Id=sa;Password=123;
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__CatalogConnection=Server=sqlserver;Database=CatalogDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - EventBus__HostName=rabbitmq
 
-  orderservice:
+  orderservice: 
     build:
       context: ../../
       dockerfile: deployments/docker/Dockerfiles/OrderService.Dockerfile
     container_name: orderservice
     ports:
-      - "5001:5001"
+      - "5278:5001"
     depends_on:
       - rabbitmq
       - sqlserver
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__OrdersConnection=Server=DESKTOP-O1E4QQ7\\SQLEXPRESS;Database=OrderDb;User Id=sa;Password=123;
+      - ASPNETCORE_URLS=http://+:5001
+      - ConnectionStrings__OrdersConnection=Server=sqlserver;Database=OrderDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - EventBus__HostName=rabbitmq
 
   rabbitmq:
     image: "rabbitmq:3-management"
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
+      interval: 10s
+      retries: 5
 
   sqlserver:
     image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: sqlserver
     environment:
-      SA_PASSWORD: "123"
+      SA_PASSWORD: "StrongPass123!"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", " /opt/mssql-tools18/bin/sqlcmd -U sa -P StrongPass123! -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 5s  
 
 volumes:
   sqlserver-data:

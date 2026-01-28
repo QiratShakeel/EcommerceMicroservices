@@ -1,3 +1,4 @@
+using BuildingBlocks.Shared.Infrastructure;
 using BuildingBlocks.Shared.Results;
 using Ecommerce.Orders.Application.Dto;
 using Ecommerce.Orders.Application.Interfaces;
@@ -7,5 +8,5 @@ namespace Ecommerce.Orders.Application.Commands
     public record CreateOrderCommand(
         Guid CustomerId,
         List<OrderItemDto> Items)
-        : IRequest<Result<Guid>>, IOrderRequest;
+        : ICommand<Result<Guid>>, IOrderRequest;
 }

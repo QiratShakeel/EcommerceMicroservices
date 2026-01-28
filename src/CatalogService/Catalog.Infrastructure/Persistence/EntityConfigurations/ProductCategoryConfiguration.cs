@@ -13,20 +13,21 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Configurations
             builder.ToTable("ProductCategories");
 
             // Composite Primary Key
-            builder.HasKey(pc => new { pc.ProductId, pc.CategoryId }).HasName("PK_ProductCategory");
+            builder.HasKey(pc => new { pc.ProductId, pc.CategoryId}).HasName("PK_ProductCategory");
 
-            builder.Property(pc => pc.ProductId).IsRequired();
-            builder.Property(pc => pc.CategoryId).IsRequired();
             // Optional: configure relationships (if needed)
-            builder.HasOne<Product>()
-                   .WithMany("_productCategories") // private field in Product
-                   .HasForeignKey(pc => pc.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(pc=>pc.Product)
+                   .WithMany(pc=>pc.Categories) // private field in Product
+                   .HasForeignKey(pc => pc.ProductId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<Category>() // if you have Category entity
+            builder.HasOne(pc=>pc.Category) // if you have Category entity
                    .WithMany()
-                   .HasForeignKey(pc => pc.CategoryId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .HasForeignKey(pc => pc.CategoryId).OnDelete(DeleteBehavior.Restrict);
+
+            //builder.Metadata.FindNavigation(nameof(ProductCategory.Product))?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            //builder.Metadata.FindNavigation(nameof(ProductCategory.Category))?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            builder.Navigation(pc => pc.Category).UsePropertyAccessMode(PropertyAccessMode.Field);
+            builder.Navigation(pc => pc.Product).UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

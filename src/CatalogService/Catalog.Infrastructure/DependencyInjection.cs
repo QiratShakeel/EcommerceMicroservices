@@ -17,7 +17,18 @@ namespace Ecommerce.Catalog.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services,IConfiguration config)
         {
             // DbContext
-            services.AddDbContext<CatalogDbContext>(options => options.UseSqlServer(config.GetConnectionString("CatalogConnection")));
+            services.AddDbContext<CatalogDbContext>(options =>
+            {
+                options.UseSqlServer(
+                    config.GetConnectionString("CatalogConnection"),
+                    sql =>
+                    {
+                        sql.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorNumbersToAdd: null);
+                    });
+            });
             services.AddScoped<IUnitOfWork, UnitOfWork<CatalogDbContext>>();
             services.AddScoped<IOutboxDbContext>(sp => sp.GetRequiredService<CatalogDbContext>());
             services.AddScoped<IProductRepository, ProductRepository>();

@@ -10,13 +10,14 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("Categories");
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).ValueGeneratedNever();
 
             builder.Property(x => x.Name)
                 .HasMaxLength(150)
                 .IsRequired();
 
             builder.Property(c => c.Description)
-               .HasMaxLength(1000);
+               .HasMaxLength(1000).IsRequired(false);
 
             //// Self-referencing one-to-many (Parent -> Children)
             //builder.HasMany(typeof(Category), "_children") // private field for children
@@ -30,11 +31,9 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Configurations
                .OnDelete(DeleteBehavior.Restrict);
 
             // Optional: access private field
-            //builder.Metadata.FindNavigation("_children")
-            //       ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            //builder.Metadata.FindNavigation("_children")?.SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.Navigation(c => c.Children)
-               .UsePropertyAccessMode(PropertyAccessMode.Field);
+            builder.Navigation(c => c.Children).UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

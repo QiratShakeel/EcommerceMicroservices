@@ -1,6 +1,7 @@
 using MediatR;
 using Ecommerce.Catalog.Domain.ValueObjects;
 using BuildingBlocks.Shared.Results;
+using BuildingBlocks.Shared.Infrastructure;
 namespace Ecommerce.Catalog.Application.Commands
 {
     public record CreateProductCommand(
@@ -8,8 +9,8 @@ namespace Ecommerce.Catalog.Application.Commands
     string SKU,
     decimal Price,
     string? Desc= null,
-    List<int>? CategoryIds= null,
+    List<Guid>? CategoryIds= null,
     List<ProductImage>? Images = null
-    ) : IRequest<Result<Guid>>, IProductRequest;
+    ) : ICommand<Result<Guid>>, IProductRequest;
 
 }

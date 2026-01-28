@@ -1,9 +1,10 @@
 using BuildingBlocks.Shared.Infrastructure;
 using MediatR;
 
+
 namespace BuildingBlocks.Shared.Behaviors.Transaction
 {
-    public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : ICommand<TResponse>
     {
         private readonly IUnitOfWork _uow;
         private readonly DomainEventDispatcher _dispatcher;
@@ -17,7 +18,7 @@ namespace BuildingBlocks.Shared.Behaviors.Transaction
             await _uow.BeginTransactionAsync();
             try
             {
-                var response = await next();
+                var response = await next();    // handler logic
                 await _uow.CommitAsync(_dispatcher);
                 return response;
             }
@@ -29,3 +30,6 @@ namespace BuildingBlocks.Shared.Behaviors.Transaction
         }
     }
 }
+
+
+//sabse phly validator run hta ha 

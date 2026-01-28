@@ -22,7 +22,7 @@ namespace Ecommerce.Catalog.API.Controllers
             return Ok(products);
         }
 
-        [HttpGet("{id}", Name = "GetProductById")]
+        [HttpGet("{id:guid}", Name = "GetProductById")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var product = await _mediator.Send(new GetProductByIdQuery(id));
@@ -37,7 +37,7 @@ namespace Ecommerce.Catalog.API.Controllers
             //    return BadRequest(result.Error);
             if (result.Value == Guid.Empty)
                 return StatusCode(500, "Product Id was not generated");
-            return CreatedAtRoute("GetProductById",new { id = result.Value },null);
+            return CreatedAtRoute("GetProductById",new { id = result.Value }, result);
         }
 
         [HttpPut("{id}")]

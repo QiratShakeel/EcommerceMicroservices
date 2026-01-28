@@ -1,9 +1,8 @@
-using Ecommerce.Catalog.Domain.ValueObjects;
-using MediatR;
+using BuildingBlocks.Shared.Infrastructure;
 namespace Ecommerce.Catalog.Application.Commands
 {
     public record DeleteCategoryCommand(
-    int categoryId
-    ) : IRequest<bool>;
+    Guid categoryId
+    ) : ICommand<bool>;
 
 }

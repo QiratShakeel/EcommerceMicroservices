@@ -20,8 +20,15 @@ namespace BuildingBlocks.Shared.Infrastructure
 
         public async Task BeginTransactionAsync()
         {
-            if (_transaction != null) return; // Already started
-            _transaction = await _context.Database.BeginTransactionAsync();
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                _transaction ??= await _context.Database.BeginTransactionAsync();
+            });
+
+            //if (_transaction != null) return; // Already started
+            //_transaction = await _context.Database.BeginTransactionAsync();
         }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

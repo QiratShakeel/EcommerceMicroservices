@@ -30,12 +30,12 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Repositories
             return await _context.Categories.ToListAsync(ct);
         }
 
-        public async Task<Category?> GetAsync(int id, CancellationToken ct)
+        public async Task<Category?> GetAsync(Guid id, CancellationToken ct)
         {
             return await _context.Categories.FirstOrDefaultAsync(x=>x.Id==id,ct);
         }
 
-        public async Task<bool> HasProductsAsync(int categoryId, CancellationToken ct)
+        public async Task<bool> HasProductsAsync(Guid categoryId, CancellationToken ct)
         {
             return await _context.ProductCategories.AnyAsync(x=>x.CategoryId==categoryId,ct);
         }

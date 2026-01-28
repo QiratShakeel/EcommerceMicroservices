@@ -39,7 +39,7 @@ namespace Catalog.Application.Tests.Commands
                 "SKU-001",
                 100m,
                 "Some description",
-                new List<int> { 1 },
+                new List<Guid> { Guid.NewGuid() },
                 new List<ProductImage>
                 {
                     new("https://img.com/a.jpg", "alt", ".jpg")

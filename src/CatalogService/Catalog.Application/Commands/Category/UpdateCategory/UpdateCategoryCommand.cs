@@ -1,11 +1,11 @@
-using MediatR;
+using BuildingBlocks.Shared.Infrastructure;
 namespace Ecommerce.Catalog.Application.Commands
 {
     public record UpdateCategoryCommand(
-    int CategoryId,
+    Guid CategoryId,
     string Name,
-    string Desc,
-    int? ParentId
-    ) : IRequest<int>;
+    string? Desc,
+    Guid? ParentId
+    ) : ICommand<Guid>;
 
 }

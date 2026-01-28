@@ -5,9 +5,9 @@
     {
         //public int ProductId { get; private set; }
         public int StockQuantity { get; private set; }
-        public int ReservedQuantity { get; private set; }
+        public int? ReservedQuantity { get; private set; }
         public string? WarehouseLocation { get; private set; }
-        public int AvailableStock => StockQuantity - ReservedQuantity;
+        public int? AvailableStock => StockQuantity - ReservedQuantity;
 
         private ProductInventory() { } // REQUIRED for EF
         public ProductInventory(int stock, string? location=null)

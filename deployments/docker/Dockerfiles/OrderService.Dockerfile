@@ -1,23 +1,23 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR EcommerceMicroservices/
 
 # Copy project folders
-COPY src/OrderService/OrderService.API/ OrderService.API/
-COPY src/OrderService/OrderService.Application/ OrderService.Application/
-COPY src/OrderService/OrderService.Infrastructure/ OrderService.Infrastructure/
-COPY src/OrderService/OrderService.Domain/ OrderService.Domain/
+# COPY src/OrderService/OrderService.API/ src/OrderService/OrderService.API/
+# COPY src/OrderService/OrderService.Application/ src/OrderService/OrderService.Application/
+# COPY src/OrderService/OrderService.Infrastructure/ src/OrderService/OrderService.Infrastructure/
+# COPY src/OrderService/OrderService.Domain/ src/OrderService/OrderService.Domain/
 
 # COPY entire building-blocks
+COPY src/OrderService/ src/OrderService/
 COPY building-blocks/ building-blocks/
 
 # Restore
-RUN dotnet restore "OrderService.API/OrderService.API.csproj"
+RUN dotnet restore "src/OrderService/OrderService.API/OrderService.API.csproj"
 
-COPY src/OrderService/ ./OrderService/
 
 # Publish
-WORKDIR /src/OrderService/OrderService.API
-RUN dotnet publish "OrderService.API.csproj" -c Release -o /app/publish
+# WORKDIR EcommerceMicroservices/src/OrderService/OrderService.API/
+RUN dotnet publish "src/OrderService/OrderService.API/OrderService.API.csproj" -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime

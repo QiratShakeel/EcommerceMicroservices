@@ -49,7 +49,7 @@ namespace Catalog.Domain.Tests.Aggregates
         {
             var product = new Product("Laptop", "SKU-001", new Money(100));
 
-            product.AddCategory(1);
+            product.AddCategory(Guid.NewGuid());
 
             Assert.Single(product.Categories);
         }
@@ -58,10 +58,11 @@ namespace Catalog.Domain.Tests.Aggregates
         public void AddDuplicateCategory_ShouldThrow()
         {
             var product = new Product("Laptop", "SKU-001", new Money(100));
-            product.AddCategory(1);
+            var categoryid= Guid.NewGuid(); 
+            product.AddCategory(categoryid);
 
             Assert.Throws<DuplicateProductCategoryException>(() =>
-                product.AddCategory(1));
+                product.AddCategory(categoryid));
         }
 
         [Fact]

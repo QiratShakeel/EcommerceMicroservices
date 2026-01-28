@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OrderService.Application\OrderService.Application.csproj" />
-    <ProjectReference Include="..\..\..\building-blocks\Eventbus.Rabbitmq\EventBus.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\..\building-blocks\EventBus.RabbitMQ\EventBus.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\..\building-blocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\OrderService.Infrastructure\OrderService.Infrastructure.csproj" />
   </ItemGroup>

@@ -1,9 +1,9 @@
-using System.Threading;
+using BuildingBlocks.Shared.Infrastructure;
 using FluentValidation;
 using MediatR;
 namespace BuildingBlocks.Shared.Behaviors.Validation
 {
-    public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : ICommand<TResponse>
     {
         private readonly IEnumerable<IValidator<TRequest>> _validator;
         public ValidationBehavior(IEnumerable<IValidator<TRequest>> validator)

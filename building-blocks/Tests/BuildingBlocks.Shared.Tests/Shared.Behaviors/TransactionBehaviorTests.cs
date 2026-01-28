@@ -7,7 +7,7 @@ namespace BuildingBlocks.Shared.Tests.Behaviors
 {
     public class TransactionBehaviorTests
     {
-        private class TestRequest : IRequest<string> { }
+        private class TestRequest : ICommand<string> { }
         [Fact]
         public async Task TransactionBehavior_Commits_Transaction()
         {

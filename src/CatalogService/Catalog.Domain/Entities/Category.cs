@@ -1,25 +1,28 @@
-﻿using System.Collections.Generic; // Required for ICollection
+﻿using Ecommerce.Catalog.Domain.Aggregates;
+using System.Collections.Generic; // Required for ICollection
 namespace Ecommerce.Catalog.Domain.Entities
 {
     public class Category
     {
-        public int Id { get; private set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
         public string Name { get; private set; }
-        public string Description { get; private set; }       
-        public int? ParentCategoryId { get; private set; }
+        public string? Description { get; private set; }       
+        public Guid? ParentCategoryId { get; private set; }
 
         private readonly List<Category> _children = new();
         public IReadOnlyCollection<Category> Children => _children.AsReadOnly();
+        //private readonly List<ProductCategory> _productCategories = new();
+        //public IReadOnlyCollection<ProductCategory> Categories => _productCategories.AsReadOnly();
 
         private Category() { } // EF
 
-        public Category(string name, string description, int? parentId = null)
+        public Category(string name, string? description, Guid? parentId = null)
         {
             SetName(name);
             Description = description;
             ParentCategoryId = parentId;
         }
-        public void UpdateCategory(string name, string description, int? parentId = null)
+        public void UpdateCategory(string name, string? description, Guid? parentId = null)
         {
             SetName(name);
             Description = description;

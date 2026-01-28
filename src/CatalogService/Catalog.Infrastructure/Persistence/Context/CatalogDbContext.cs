@@ -32,7 +32,7 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Context
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-            //modelBuilder.HasDefaultSchema("catalog");
+            modelBuilder.HasDefaultSchema("catalog");
             // Apply Fluent API configurations
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogDbContext).Assembly);
     }

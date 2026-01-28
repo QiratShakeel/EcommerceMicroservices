@@ -25,7 +25,7 @@ public class ProductsControllerTests : IClassFixture<CustomWebApplicationFactory
             "SKU-TEST-001",
             100m,
             "Test Description",
-            new List<int> { 1 },
+            new List<Guid> { Guid.NewGuid() },
             new List<ProductImage> { new("https://img.com/a.jpg", "alt", ".jpg") }
         );
 

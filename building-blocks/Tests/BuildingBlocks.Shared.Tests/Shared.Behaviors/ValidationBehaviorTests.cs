@@ -1,11 +1,12 @@
 using BuildingBlocks.Shared.Behaviors.Validation;
+using BuildingBlocks.Shared.Infrastructure;
 using FluentValidation;
 using MediatR;
 using Moq;
 
 namespace BuildingBlocks.Shared.Tests.Behaviors
 {
-    public class TestRequest : IRequest<string> { public string Name { get; set; } = ""; }
+    public class TestRequest : ICommand<string> { public string Name { get; set; } = ""; }
     public class ValidationBehaviorTests
     {
         [Fact]

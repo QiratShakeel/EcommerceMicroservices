@@ -6,6 +6,9 @@ using BuildingBlocks.Shared.Outbox;
 using Ecommerce.Catalog.API.Extensions;
 using Ecommerce.Catalog.Application;
 using Ecommerce.Catalog.Infrastructure;
+using Ecommerce.Catalog.Infrastructure.Persistence.Context;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,11 +40,21 @@ builder.Services.AddSwagger();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+    db.Database.Migrate();
+}
+
 // Middleware pipeline
 app.UseSharedExceptions();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

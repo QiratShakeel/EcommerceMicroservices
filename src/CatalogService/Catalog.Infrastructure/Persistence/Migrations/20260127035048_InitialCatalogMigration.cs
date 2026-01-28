@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persistence.Migrations
+namespace Catalog.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCatalogMigration : Migration
@@ -11,15 +11,18 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "catalog");
+
             migrationBuilder.CreateTable(
                 name: "Categories",
+                schema: "catalog",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    ParentCategoryId = table.Column<int>(type: "int", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    ParentCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -27,6 +30,7 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
                     table.ForeignKey(
                         name: "FK_Categories_Categories_ParentCategoryId",
                         column: x => x.ParentCategoryId,
+                        principalSchema: "catalog",
                         principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -34,6 +38,7 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
 
             migrationBuilder.CreateTable(
                 name: "OutboxMessages",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -50,17 +55,18 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
 
             migrationBuilder.CreateTable(
                 name: "Products",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     SKU = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Inventory_StockQuantity = table.Column<int>(type: "int", nullable: false),
-                    Inventory_ReservedQuantity = table.Column<int>(type: "int", nullable: false),
-                    Inventory_WarehouseLocation = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Inventory_ReservedQuantity = table.Column<int>(type: "int", nullable: true),
+                    Inventory_WarehouseLocation = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -71,11 +77,11 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
 
             migrationBuilder.CreateTable(
                 name: "ProductCategories",
+                schema: "catalog",
                 columns: table => new
                 {
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: false),
-                    ProductId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -83,30 +89,28 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
                     table.ForeignKey(
                         name: "FK_ProductCategories_Categories_CategoryId",
                         column: x => x.CategoryId,
+                        principalSchema: "catalog",
                         principalTable: "Categories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ProductCategories_Products_ProductId",
                         column: x => x.ProductId,
+                        principalSchema: "catalog",
                         principalTable: "Products",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProductCategories_Products_ProductId1",
-                        column: x => x.ProductId1,
-                        principalTable: "Products",
-                        principalColumn: "Id");
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ProductImages",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    AltText = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    AltText = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     FileType = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
@@ -116,6 +120,7 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
                     table.ForeignKey(
                         name: "FK_ProductImages_Products_ProductId",
                         column: x => x.ProductId,
+                        principalSchema: "catalog",
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -123,21 +128,19 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
 
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_ParentCategoryId",
+                schema: "catalog",
                 table: "Categories",
                 column: "ParentCategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductCategories_CategoryId",
+                schema: "catalog",
                 table: "ProductCategories",
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductCategories_ProductId1",
-                table: "ProductCategories",
-                column: "ProductId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ProductImages_ProductId",
+                schema: "catalog",
                 table: "ProductImages",
                 column: "ProductId");
         }
@@ -146,19 +149,24 @@ namespace Catalog.Infrastructure.src.CatalogService.Catalog.Infrastructure.Persi
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "OutboxMessages");
+                name: "OutboxMessages",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "ProductCategories");
+                name: "ProductCategories",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "ProductImages");
+                name: "ProductImages",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "Categories",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "Products",
+                schema: "catalog");
         }
     }
 }

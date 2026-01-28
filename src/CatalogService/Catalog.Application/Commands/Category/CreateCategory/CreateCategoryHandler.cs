@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ecommerce.Catalog.Application.Commands.CreateCategory
 {
-    public class CreateCategoryHandler : IRequestHandler<CreateCategoryCommand, int>
+    public class CreateCategoryHandler : IRequestHandler<CreateCategoryCommand, Guid>
     {
         private readonly ICategoryRepository _repository;
         //private readonly IMapper _mapper;
@@ -15,7 +15,7 @@ namespace Ecommerce.Catalog.Application.Commands.CreateCategory
             _repository = repository;
             //_mapper = mapper;
         }
-        public async Task<int> Handle(CreateCategoryCommand cmd, CancellationToken ct)
+        public async Task<Guid> Handle(CreateCategoryCommand cmd, CancellationToken ct)
         {
             var category = new Category(cmd.Name, cmd.Desc, cmd.ParentId);
             await _repository.AddAsync(category, ct);
