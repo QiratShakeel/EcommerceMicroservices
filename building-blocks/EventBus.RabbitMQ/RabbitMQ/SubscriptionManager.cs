@@ -5,8 +5,7 @@ namespace BuildingBlocks.EventBus.RabbitMQ
     {
         private readonly Dictionary<string, Type> _handlers = new();
 
-        public void AddSubscription<TEvent, THandler>()
-            where TEvent : IIntegrationEvent
+        public void AddSubscription<TEvent, THandler>() where TEvent : IIntegrationEvent
         {
             _handlers[typeof(TEvent).Name] = typeof(THandler);
         }

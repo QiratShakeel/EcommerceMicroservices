@@ -9,10 +9,12 @@ namespace Ecommerce.Catalog.Application.Interfaces
         // The domain defines the contract:
         Task<Product?> GetByIdAsync(Guid id, CancellationToken ct);
         Task<IEnumerable<Product>> GetAllAsync(CancellationToken ct);
+        Task<List<Product>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct);
         Task AddAsync(Product product, CancellationToken ct);
         Task UpdateAsync(Product product, CancellationToken ct);
         Task DeleteAsync(Product product);
         // Maybe a specific domain requirement:
+        //Task ReduceInventoryAsync(Guid productId, int quantity);
         Task<bool> IsSkuUniqueAsync(string sku, CancellationToken ct);
     }
 }

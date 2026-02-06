@@ -16,6 +16,8 @@ services:
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__CatalogConnection=Server=sqlserver;Database=CatalogDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
       - EventBus__HostName=rabbitmq
+      - ASPNETCORE_Kestrel__Endpoints__Grpc__Url=http://+:5200
+      - ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols=Http2
 
   orderservice: 
     build:
@@ -32,6 +34,7 @@ services:
       - ASPNETCORE_URLS=http://+:5001
       - ConnectionStrings__OrdersConnection=Server=sqlserver;Database=OrderDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
       - EventBus__HostName=rabbitmq
+      - GrpcSettings__CatalogUrl=http://catalogservice:5200
 
   rabbitmq:
     image: "rabbitmq:3-management"

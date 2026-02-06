@@ -10,7 +10,7 @@ namespace BuildingBlocks.Shared.Behaviors.Logging
             // Configure Serilog globally if not already
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
                 .Enrich.FromLogContext()
                 .CreateLogger();
 

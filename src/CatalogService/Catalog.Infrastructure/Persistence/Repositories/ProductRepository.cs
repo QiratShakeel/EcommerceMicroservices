@@ -49,5 +49,11 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Repositories
             // Returns true if SKU does NOT exist
             return !await _context.Products.AnyAsync(p => p.SKU == sku, ct);
         }
+
+        public async Task<List<Product>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct)
+        {
+            return await _context.Products.Where(p => ids.Contains(p.Id)).ToListAsync(ct);
+        }
+
     }
 }

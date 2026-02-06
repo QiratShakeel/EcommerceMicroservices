@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks.Shared\BuildingBlocks.Shared.csproj" />
     <ProjectReference Include="..\EventBus.Abstractions\EventBus.Abstractions.csproj" />
   </ItemGroup>
 

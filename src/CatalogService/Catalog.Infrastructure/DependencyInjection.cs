@@ -1,6 +1,10 @@
-﻿using BuildingBlocks.Shared.Behaviors.Transaction;
+﻿using BuildingBlocks.EventBus.Abstractions;
+using BuildingBlocks.EventBus.RabbitMQ;
+using BuildingBlocks.Shared.Behaviors.Transaction;
 using BuildingBlocks.Shared.Infrastructure;
+using BuildingBlocks.Shared.Infrastructure.Messaging.IntegrationEvents;
 using BuildingBlocks.Shared.Outbox;
+using Ecommerce.Catalog.Application.EventsHandlers;
 using Ecommerce.Catalog.Application.Interfaces;
 using Ecommerce.Catalog.Infrastructure.Persistence.Context;
 using Ecommerce.Catalog.Infrastructure.Persistence.Repositories;
@@ -29,6 +33,8 @@ namespace Ecommerce.Catalog.Infrastructure
                             errorNumbersToAdd: null);
                     });
             });
+            
+            services.AddHostedService<RabbitMQConsumer>();
             services.AddScoped<IUnitOfWork, UnitOfWork<CatalogDbContext>>();
             services.AddScoped<IOutboxDbContext>(sp => sp.GetRequiredService<CatalogDbContext>());
             services.AddScoped<IProductRepository, ProductRepository>();

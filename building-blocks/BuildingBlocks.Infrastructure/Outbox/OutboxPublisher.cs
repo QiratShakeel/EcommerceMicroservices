@@ -11,15 +11,13 @@ namespace BuildingBlocks.Shared.Outbox
         {
             _context = context;
         }
-
+        
         public async Task PublishAsync(IIntegrationEvent @event)
         {
             var message = new OutboxMessage
             {
-                Type = @event.GetType().FullName!,
-                Content = JsonSerializer.Serialize(
-                    @event,
-                    @event.GetType())
+                Type = @event.GetType().AssemblyQualifiedName!,
+                Content = JsonSerializer.Serialize(@event,@event.GetType(), EventJsonOptions.Default)
             };
 
             await _context.AddMessageAsync(message);

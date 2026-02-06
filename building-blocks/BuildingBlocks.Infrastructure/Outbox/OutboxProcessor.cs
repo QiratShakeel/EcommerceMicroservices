@@ -13,16 +13,13 @@ namespace BuildingBlocks.Shared.Outbox
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<OutboxProcessor> _logger;
 
-        public OutboxProcessor(
-            IServiceScopeFactory scopeFactory,
-            ILogger<OutboxProcessor> logger)
+        public OutboxProcessor(IServiceScopeFactory scopeFactory,ILogger<OutboxProcessor> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(
-            CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -31,37 +28,35 @@ namespace BuildingBlocks.Shared.Outbox
             }
         }
 
-        private async Task ProcessOutboxAsync(
-            CancellationToken cancellationToken)
+        private async Task ProcessOutboxAsync(CancellationToken cancellationToken)
         {
             using var scope = _scopeFactory.CreateScope();
-
-            var dbContext =
-                scope.ServiceProvider.GetRequiredService<IOutboxDbContext>();
-
-            var eventBus =
-                scope.ServiceProvider.GetRequiredService<IEventBus>();
-
-            //var messages = await dbContext.OutboxMessages
-            //    .Where(x => x.ProcessedOn == null)
-            //    .OrderBy(x => x.OccurredOn)
-            //    .Take(20)
-            //    .ToListAsync(cancellationToken);
-            var messages = await dbContext
-           .GetUnprocessedMessagesAsync(20, cancellationToken);
+            var dbContext = scope.ServiceProvider.GetRequiredService<IOutboxDbContext>();
+            var eventBus = scope.ServiceProvider.GetRequiredService<IEventBus>();
+            var messages = await dbContext.GetUnprocessedMessagesAsync(20, cancellationToken);
 
             foreach (var message in messages)
             {
                 try
                 {
-                    var type = Type.GetType(message.Type)!;
-                    var @event = JsonSerializer.Deserialize(
-                        message.Content,
-                        type) as IIntegrationEvent;
+                    var type = Type.GetType(message.Type);
 
-                    eventBus.PublishAsync(@event!);
+                    if (type == null)
+                    {
+                        _logger.LogError("Outbox: Event type not found: {Type}", message.Type);
+                        continue;
+                    }
 
-                    //message.ProcessedOn = DateTime.UtcNow;
+                    var @event = (IIntegrationEvent?)JsonSerializer.Deserialize(message.Content,type,EventJsonOptions.Default);
+
+                    if (@event == null)
+                    {
+                        _logger.LogError(
+                            "Outbox: Failed to deserialize {Type}. Payload: {Payload}",message.Type,message.Content);
+                        continue;
+                    }
+
+                    await eventBus.PublishAsync(@event);
                     await dbContext.MarkAsProcessedAsync(message, cancellationToken);
                 }
                 catch (Exception ex)

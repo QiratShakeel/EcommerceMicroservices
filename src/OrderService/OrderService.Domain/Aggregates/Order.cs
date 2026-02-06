@@ -51,7 +51,7 @@ namespace Ecommerce.Orders.Domain.Aggregates
             Status = OrderStatus.Confirmed;
 
             AddDomainEvent(
-                new OrderCreatedDomainEvent(Id, CustomerId, Total)
+                new OrderCreatedDomainEvent(Id, CustomerId, Total, _orderItems)
             );
         }
         public void Cancel()

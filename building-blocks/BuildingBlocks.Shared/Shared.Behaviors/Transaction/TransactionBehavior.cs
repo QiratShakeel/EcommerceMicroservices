@@ -15,18 +15,12 @@ namespace BuildingBlocks.Shared.Behaviors.Transaction
         }
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            await _uow.BeginTransactionAsync();
-            try
+            // Execution Strategy ke saath Unit of Work ka Commit use karein
+            return await _uow.ExecuteWithTransactionAsync(async () =>
             {
-                var response = await next();    // handler logic
-                await _uow.CommitAsync(_dispatcher);
+                var response = await next(); // Business logic (Handler)
                 return response;
-            }
-            catch
-            {
-                await _uow.RollbackAsync();
-                throw;
-            }
+            }, _dispatcher);
         }
     }
 }

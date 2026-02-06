@@ -1,3 +1,5 @@
+using Ecommerce.Orders.Application.Interfaces;
+using Ecommerce.Orders.Application.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +11,7 @@ namespace Ecommerce.Orders.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
+            services.AddScoped<IOrderService, OrderService>();
             services.AddMediatR(Assembly.GetExecutingAssembly());
             services.AddAutoMapper(typeof(ApplicationExtensions).Assembly);
             services.AddValidatorsFromAssembly(typeof(ApplicationExtensions).Assembly);

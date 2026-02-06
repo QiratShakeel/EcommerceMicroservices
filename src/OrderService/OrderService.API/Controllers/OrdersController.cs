@@ -16,8 +16,17 @@ namespace Ecommerce.Orders.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateOrderCommand command)
-            => Ok(await _mediator.Send(command));
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
+        {
+            // Controller sirf Command create karke Mediator ko deta hai
+            //var command = new CreateOrderCommand(request.CustomerId, request.Items);
+
+            var result = await _mediator.Send(request);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : BadRequest(result.Error);
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)

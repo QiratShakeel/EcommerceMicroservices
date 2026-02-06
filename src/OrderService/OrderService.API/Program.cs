@@ -2,6 +2,7 @@ using BuildingBlocks.EventBus.RabbitMQ;
 using BuildingBlocks.Shared.Behaviors.Logging;
 using BuildingBlocks.Shared.Exceptions;
 using BuildingBlocks.Shared.Extensions;
+using BuildingBlocks.Shared.Grpc.Catalog;
 using BuildingBlocks.Shared.Outbox;
 using Ecommerce.Orders.API.Extensions;
 using Ecommerce.Orders.Application;
@@ -30,6 +31,13 @@ builder.Services.AddSharedBehaviors();
 // --------------------------
 builder.Services.AddRabbitMQEventBus(builder.Configuration);
 
+// --------------------------
+// Register gRPC client for CatalogService
+// --------------------------
+builder.Services.AddGrpcClient<CatalogGrpc.CatalogGrpcClient>(o =>
+{
+    o.Address = new Uri(builder.Configuration["GrpcSettings:CatalogUrl"]);
+});
 // --------------------------
 // Add Controllers, Swagger, etc.
 // --------------------------

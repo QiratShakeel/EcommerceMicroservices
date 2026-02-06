@@ -4,9 +4,11 @@ using BuildingBlocks.Shared.Exceptions;
 using BuildingBlocks.Shared.Extensions;
 using BuildingBlocks.Shared.Outbox;
 using Ecommerce.Catalog.API.Extensions;
+using Ecommerce.Catalog.API.Grpc;
 using Ecommerce.Catalog.Application;
 using Ecommerce.Catalog.Infrastructure;
 using Ecommerce.Catalog.Infrastructure.Persistence.Context;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -32,11 +34,31 @@ builder.Services.AddSharedBehaviors();
 builder.Services.AddRabbitMQEventBus(builder.Configuration);
 
 // --------------------------
+// Add gRPC
+// --------------------------
+builder.Services.AddGrpc();
+
+// --------------------------
 // Add Controllers, Swagger, etc.
 // --------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // "Grpc" endpoint from launchSettings.json
+    options.ListenAnyIP(5200, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http2;
+        listenOptions.UseHttps();
+    });
+    // REST / browser endpoint
+    options.ListenAnyIP(5108, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1;
+    });
+});
 
 var app = builder.Build();
 
@@ -58,5 +80,11 @@ if (!app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// --------------------------
+// gRPC endpoints
+// --------------------------
+app.MapGrpcService<CatalogGrpcService>();
+app.MapGet("/", () => "Catalog gRPC Service");
 
 app.Run();

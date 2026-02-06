@@ -9,6 +9,13 @@ namespace BuildingBlocks.EventBus.RabbitMQ
         public string Password { get; set; } = "guest";
         public string ExchangeName { get; set; } = "ecommerce.events";
         public int RetryCount { get; set; } = 5;
+        public List<EventSubscription> Subscriptions { get; set; } = new();
+        public Dictionary<string, string> RoutingKeys { get; set; } = new();
+    }
+    public sealed class EventSubscription
+    {
+        public string EventName { get; set; } = default!;
+        public string QueueName { get; set; } = default!;
     }
 }
 

@@ -8,12 +8,8 @@ namespace BuildingBlocks.Shared.Outbox
         //IEnumerable<OutboxMessage> OutboxMessages { get; } 
         Task AddMessageAsync(OutboxMessage message); // async-friendly method
         //Task<List<OutboxMessage>> GetUnpublishedMessagesAsync();
-        Task<List<OutboxMessage>> GetUnprocessedMessagesAsync(
-        int batchSize,
-        CancellationToken cancellationToken);
+        Task<List<OutboxMessage>> GetUnprocessedMessagesAsync(int batchSize, CancellationToken cancellationToken);
 
-        Task MarkAsProcessedAsync(
-            OutboxMessage message,
-            CancellationToken cancellationToken);
+        Task MarkAsProcessedAsync(OutboxMessage message,CancellationToken cancellationToken);
     }
 }

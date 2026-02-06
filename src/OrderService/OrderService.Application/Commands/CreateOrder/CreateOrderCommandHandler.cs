@@ -4,33 +4,32 @@ using BuildingBlocks.Shared.Results;
 using MediatR;
 using Ecommerce.Orders.Application.Commands;
 using AutoMapper;
+using BuildingBlocks.Shared.Grpc.Catalog;
+
 namespace Ecommerce.Orders.Application.Commands
 {
-    public class CreateOrderCommandHandler: IRequestHandler<CreateOrderCommand, Result<Guid>>
+    public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Result<Guid>>
     {
-        private readonly IOrderRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IOrderService _orderService;
 
-        public CreateOrderCommandHandler(IOrderRepository repository, IMapper mapper)
+        public CreateOrderCommandHandler(IOrderService orderService) => _orderService = orderService;
+
+        public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            _repository = repository;
-            _mapper = mapper;
-        }
-
-        public async Task<Result<Guid>> Handle(CreateOrderCommand request,CancellationToken cancellationToken)
-        {
-            var order = _mapper.Map<OrderEntity>(request);
-
-            foreach (var item in request.Items)
+            try
             {
-                order.AddItem(item.ProductId, item.Price, item.Quantity);
+                // 1. External Call (No DB Lock)
+                var validatedItems = await _orderService.ValidateAndGetProductDetails(request.Items);
+
+                // 2. DB Work (Atomic Transaction)
+                var orderId = await _orderService.PlaceOrderAsync(request.CustomerId, validatedItems);
+
+                return Result<Guid>.Success(orderId);
             }
-
-            order.Confirm();
-
-            await _repository.AddAsync(order);
-
-            return Result<Guid>.Success(order.Id);
+            catch (Exception ex)
+            {
+                return Result<Guid>.Failure(ex.Message);
+            }
         }
     }
 }

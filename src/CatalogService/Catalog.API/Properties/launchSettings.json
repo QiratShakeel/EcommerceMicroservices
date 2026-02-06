@@ -37,5 +37,17 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
+  },
+  "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://localhost:5108",
+        "Protocols": "Http1"
+      },
+      "Grpc": {
+        "Url": "https://localhost:5200",
+        "Protocols": "Http2"
+      }
+    }
   }
 }
