@@ -15,7 +15,7 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Context
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
-    public async Task AddMessageAsync(OutboxMessage message)
+    public async Task AddMessageAsync(OutboxMessage message, CancellationToken cancellation)
     {
         await OutboxMessages.AddAsync(message);
         await SaveChangesAsync();

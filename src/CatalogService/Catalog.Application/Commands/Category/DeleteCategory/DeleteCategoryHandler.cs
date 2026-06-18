@@ -20,6 +20,9 @@ namespace Ecommerce.Catalog.Application.Commands
             var category = await _repository.GetAsync(cmd.categoryId, ct);
             if (category == null)
                 return false;
+            if (await _repository.HasChildrenAsync(cmd.categoryId,ct))
+                throw new InvalidOperationException(
+                    "Cannot delete category having child categories.");
 
             await _repository.DeleteAsync(category);
             return true;

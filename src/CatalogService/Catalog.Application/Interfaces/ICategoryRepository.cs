@@ -7,6 +7,7 @@ namespace Ecommerce.Catalog.Application.Interfaces
         Task<List<Category>> GetAllAsync(CancellationToken ct);
         Task AddAsync(Category category, CancellationToken ct);
         Task UpdateAsync(Category category, CancellationToken ct);
+        Task<bool> HasChildrenAsync(Guid categoryId, CancellationToken token);
         Task<bool> HasProductsAsync(Guid categoryId, CancellationToken ct);
         Task DeleteAsync(Category category);
     }

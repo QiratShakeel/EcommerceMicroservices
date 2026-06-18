@@ -18,7 +18,7 @@ namespace Ecommerce.Orders.Application.Queries
 
         public async Task<OrderDto> Handle(GetOrderByIdQuery request,CancellationToken cancellationToken)
         {
-            var order = await _repository.GetByIdAsync(request.OrderId)
+            var order = await _repository.GetByIdAsync(request.OrderId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Orders), request.OrderId);
 
             return _mapper.Map<OrderDto>(order);

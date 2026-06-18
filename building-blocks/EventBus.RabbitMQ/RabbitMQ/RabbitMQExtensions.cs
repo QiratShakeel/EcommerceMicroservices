@@ -20,7 +20,7 @@ namespace BuildingBlocks.EventBus.RabbitMQ
             services.AddSingleton<SubscriptionManager>();
 
             // Hosted service for consumers
-            //services.AddHostedService<RabbitMQConsumer>();
+            services.AddHostedService<RabbitMQConsumer>();
 
             return services;
         }

@@ -6,6 +6,7 @@ using Ecommerce.Orders.Application.Dto;
 using Ecommerce.Orders.Application.Interfaces;
 using Ecommerce.Orders.Domain.Aggregates;
 using Grpc.Core;
+using MediatR;
 
 namespace Ecommerce.Orders.Application.Services
 {
@@ -44,7 +45,7 @@ namespace Ecommerce.Orders.Application.Services
             return result;
         }
 
-        public async Task<Guid> PlaceOrderAsync(Guid customerId, List<OrderItemDto> validatedItems)
+        public async Task<Guid> PlaceOrderAsync(Guid customerId, List<OrderItemDto> validatedItems, CancellationToken cancellationToken)
         {
             // DB Transaction (Only for Writes - FAST!)
             return await _uow.ExecuteWithTransactionAsync(async () =>
@@ -55,7 +56,7 @@ namespace Ecommerce.Orders.Application.Services
                     order.AddItem(item.ProductId, item.Price, item.Quantity);
                 }
                 order.Confirm();
-                await _repository.AddAsync(order);
+                await _repository.AddAsync(order, cancellationToken);
                 return order.Id;
             },  _dispatcher); // Dispatcher yahan pass karein
         }

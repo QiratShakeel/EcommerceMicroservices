@@ -4,7 +4,7 @@ namespace BuildingBlocks.Shared.Outbox
 {
     public interface IOutboxPublisher
     {
-        Task PublishAsync(IIntegrationEvent eventObj);
+        Task PublishAsync(IIntegrationEvent eventObj, CancellationToken cancellation);
     }
 }
 

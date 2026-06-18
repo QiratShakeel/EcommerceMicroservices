@@ -25,7 +25,8 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Context
             (
                 name: "Test Product",
                 sku: "sku-001",
-                price: new BuildingBlocks.Shared.Infrastructure.Money(10)
+                price: new BuildingBlocks.Shared.Infrastructure.Money(10),
+                stock: 10
             ));
 
             await DbContext.SaveChangesAsync();

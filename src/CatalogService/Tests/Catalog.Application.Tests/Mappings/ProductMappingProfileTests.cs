@@ -23,7 +23,7 @@ namespace Catalog.Application.Tests.Mapping
                 cfg.AddProfile<ProductMappingProfile>())
                 .CreateMapper();
 
-            var product = new Product("Test", "SKU1", new Money(100), "Desc");
+            var product = new Product("Test", "SKU1", new Money(100), 10,"Desc");
 
             var dto = mapper.Map<ProductDto>(product);
 

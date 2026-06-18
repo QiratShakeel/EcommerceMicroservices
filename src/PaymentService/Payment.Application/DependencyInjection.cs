@@ -1,6 +1,7 @@
 using BuildingBlocks.EventBus.Abstractions;
 using BuildingBlocks.Shared.Infrastructure;
 using BuildingBlocks.Shared.Infrastructure.Messaging.IntegrationEvents;
+using Ecommerce.Payment.Application.EventsHandlers;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,14 +14,14 @@ namespace Ecommerce.Payment.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddMediatR(Assembly.GetExecutingAssembly());
-            //services.AddAutoMapper(typeof(ApplicationExtensions).Assembly);
-            //services.AddValidatorsFromAssembly(typeof(ApplicationExtensions).Assembly);
+            services.AddAutoMapper(typeof(ApplicationExtensions).Assembly);
+            services.AddValidatorsFromAssembly(typeof(ApplicationExtensions).Assembly);
             // Register your event handlers as usual
-            //services.AddScoped<IIntegrationEventHandler<OrderCreatedIntegrationEventForPayment>, OrderCreatedIntegrationEventForPaymentHandler>();
+            services.AddScoped<IIntegrationEventHandler<OrderCreatedIntegrationEvent>, OrderCreatedIntegrationEventConsumer>();
             // Register EventTypeResolver with Catalog-specific mappings
             var mappings = new Dictionary<string, Type>
             {
-                { "order.created.payment", typeof(OrderCreatedIntegrationEventForPayment) }
+                { "order.created", typeof(OrderCreatedIntegrationEvent) }
             };
             services.AddSingleton<IEventTypeResolver>(new EventTypeResolver(mappings));
             return services;

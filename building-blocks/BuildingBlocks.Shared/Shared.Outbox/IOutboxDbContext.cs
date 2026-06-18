@@ -6,7 +6,7 @@ namespace BuildingBlocks.Shared.Outbox
     {
         //DbSet<OutboxMessage> OutboxMessages { get; }
         //IEnumerable<OutboxMessage> OutboxMessages { get; } 
-        Task AddMessageAsync(OutboxMessage message); // async-friendly method
+        Task AddMessageAsync(OutboxMessage message, CancellationToken cancellation); // async-friendly method
         //Task<List<OutboxMessage>> GetUnpublishedMessagesAsync();
         Task<List<OutboxMessage>> GetUnprocessedMessagesAsync(int batchSize, CancellationToken cancellationToken);
 

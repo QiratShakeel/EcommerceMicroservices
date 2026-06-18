@@ -9,6 +9,6 @@ namespace Ecommerce.Orders.Application.Interfaces
         Task<List<OrderItemDto>> ValidateAndGetProductDetails(List<CreateOrderItemDto> items);
 
         // Ye method sirf DB transaction handle karega
-        Task<Guid> PlaceOrderAsync(Guid customerId, List<OrderItemDto> validatedItems);
+        Task<Guid> PlaceOrderAsync(Guid customerId, List<OrderItemDto> validatedItems, CancellationToken cancellationToken);
     }
 }

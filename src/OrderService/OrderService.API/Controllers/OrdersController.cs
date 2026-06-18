@@ -1,9 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using MediatR;
 using Ecommerce.Orders.Application.Commands;
 using Ecommerce.Orders.Application.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Ecommerce.Orders.API.Extensions;
 namespace Ecommerce.Orders.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/orders")]
     public class OrdersController : ControllerBase
@@ -16,16 +19,19 @@ namespace Ecommerce.Orders.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         {
-            // Controller sirf Command create karke Mediator ko deta hai
-            //var command = new CreateOrderCommand(request.CustomerId, request.Items);
-
-            var result = await _mediator.Send(request);
+            var userId = User.GetUserId();
+            var command = new CreateOrderCommandWithUser
+            (
+                userId,
+                request.Items
+            );
+            var result = await _mediator.Send(command);
 
             return result.IsSuccess
-                ? Ok(result.Value)
-                : BadRequest(result.Error);
+                ? Ok(result)
+                : BadRequest(result);
         }
 
         [HttpGet("{id}")]

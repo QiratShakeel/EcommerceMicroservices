@@ -1,0 +1,772 @@
+{
+  "info": {
+    "_postman_id": "5a8598b0-9c8f-48a9-a9eb-b4c81e53d1ad",
+    "name": "ECommerce-Microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26786341"
+  },
+  "item": [
+    {
+      "name": "Identity",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200/201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200,201]);\r",
+                  "});\r",
+                  "\r",
+                  "const body = pm.request.body.raw\r",
+                  "const request = JSON.parse(body)\r",
+                  "\r",
+                  "const userId = pm.response.json()\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"userId\", userId)\r",
+                  "pm.collectionVariables.set(\"email\", request.email)\r",
+                  "pm.collectionVariables.set(\"password\", request.password)\r",
+                  "\r",
+                  "console.log(\"User ID:\", userId)"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Ali Khan\",\r\n  \"email\": \"ali@test.com\",\r\n  \"password\": \"Ali@12345\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/identity/api/users/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "identity",
+                "api",
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Token Generated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.access_token).to.exist;",
+                  "    pm.collectionVariables.set(\"token\", jsonData.access_token);",
+                  "    console.log(pm.collectionVariables.get(\"token\"));",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "{{email}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "ecommerce_api",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/identity/connect/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "identity",
+                "connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/identity/api/Users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "identity",
+                "api",
+                "Users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/identity/api/Users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "identity",
+                "api",
+                "Users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "Category",
+          "item": [
+            {
+              "name": "Create Category",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Category Created\", function () {\r",
+                      "    var jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData.id).to.exist;\r",
+                      "    pm.collectionVariables.set(\"categoryId\", jsonData.id);\r",
+                      "    console.log(pm.collectionVariables.get(\"categoryId\"));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Test Category\",\r\n  \"desc\": \"For Test Purpose\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/Category",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "Category"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Catoegories",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/Category",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "Category"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Category By Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/Category/{{categoryId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "Category",
+                    "{{categoryId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Category",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"categoryId\": \"{{categoryId}}\",\r\n  \"name\": \"Update Category\",\r\n  \"desc\": \"Update Category Description\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/Category/{{categoryId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "Category",
+                    "{{categoryId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Category",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 204) {\r",
+                      "    pm.collectionVariables.set(\"categoryId\", \"\");\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"categoryId\": \"{{categoryId}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/Category/{{categoryId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "Category",
+                    "{{categoryId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Product",
+          "item": [
+            {
+              "name": "Create Product",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Product Created\", function () {\r",
+                      "    var jsonData = pm.response.json();\r",
+                      "    pm.expect(jsonData.value).to.exist;\r",
+                      "    pm.collectionVariables.set(\"productId\", jsonData.value);\r",
+                      "    console.log(pm.collectionVariables.get(\"productId\"));\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "Name",
+                      "value": "Test Prod",
+                      "type": "text",
+                      "uuid": "bd95ed3f-046d-493d-bb99-c2521884ea96"
+                    },
+                    {
+                      "key": "SKU",
+                      "value": "SKUTST03",
+                      "type": "text",
+                      "uuid": "38592e47-31cb-4218-87c9-01d7b79ac268"
+                    },
+                    {
+                      "key": "stock",
+                      "value": "40",
+                      "type": "text",
+                      "uuid": "4668f972-ab4d-4a71-bb36-95af8a322840"
+                    },
+                    {
+                      "key": "Price",
+                      "value": "233.33",
+                      "type": "text",
+                      "uuid": "6d93e004-4944-45bd-ad5c-037ef8800d58"
+                    },
+                    {
+                      "key": "Desc",
+                      "value": "For TEST Purpose ",
+                      "type": "text",
+                      "uuid": "55b50a72-7606-4fb6-b320-1bb7d952e8ac"
+                    },
+                    {
+                      "key": "CategoryIds",
+                      "value": "{{categoryId}}",
+                      "type": "text",
+                      "uuid": "f545a762-4b2d-4fad-a8bc-1697e6502c9d"
+                    },
+                    {
+                      "key": "Images",
+                      "type": "file",
+                      "uuid": "5f27cc9b-a54f-4728-a77d-2b58e12e8ae6",
+                      "src": "postman-cloud:///1f165954-53a7-4ef0-9041-a419c1b03b39"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/products",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "products"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Products",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/products",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "products"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Product By Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/products/{{productId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "products",
+                    "{{productId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Product",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "productId",
+                      "value": "{{productId}}",
+                      "type": "text",
+                      "uuid": "dd25f02d-8b05-4446-8a14-c189c8614308"
+                    },
+                    {
+                      "key": "Name",
+                      "value": "Update Product",
+                      "type": "text",
+                      "uuid": "74dcb722-31e5-40e4-ad1f-7f69809691d4"
+                    },
+                    {
+                      "key": "Price",
+                      "value": "1499",
+                      "type": "text",
+                      "uuid": "e4ff9dc4-50db-4095-9f3b-6967013e6420"
+                    },
+                    {
+                      "key": "Stock",
+                      "value": "250",
+                      "type": "text",
+                      "uuid": "96591076-bccd-4dc1-bb53-1f0fd3074f17"
+                    },
+                    {
+                      "key": "Desc",
+                      "value": "Updated Product Description",
+                      "type": "text",
+                      "uuid": "5f99add5-4b5b-4aaf-8082-4f5a5c9ffe1c"
+                    },
+                    {
+                      "key": "CategoryIds",
+                      "value": "{{categoryId}}",
+                      "type": "text",
+                      "uuid": "703a372d-2bea-49d9-8123-2b14653d381e",
+                      "disabled": true
+                    },
+                    {
+                      "key": "Images",
+                      "type": "file",
+                      "uuid": "19698326-deee-4181-aa07-23057f9ff6a3",
+                      "src": "/D:/Qirat/Dotnet/SeniorProjects/EcommerceProject/EcommerceMicroservices/frontend/public/img/product05.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/products/{{productId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "products",
+                    "{{productId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Product",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 204) {\r",
+                      "    pm.collectionVariables.set(\"productId\",\"\");\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"prodId\": \"{{productId}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/catalog/api/products/{{productId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "catalog",
+                    "api",
+                    "products",
+                    "{{productId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Order exists\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Order Created\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.value).to.exist;\r",
+                  "    pm.collectionVariables.set(\"orderId\", jsonData.value);\r",
+                  "    console.log(pm.collectionVariables.get(\"orderId\"));\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"{{productId}}\",\r\n      \"quantity\": 5\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/api/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "api",
+                "orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order By Id",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// let res = pm.response.json();\r",
+                  "\r",
+                  "// pm.test(\"Correct order returned\", function () {\r",
+                  "//     pm.expect(res.id || res.data.id).to.eql(pm.environment.get(\"orderId\"));\r",
+                  "// });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/api/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "api",
+                "orders",
+                "{{orderId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5213"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "productId",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    }
+  ]
+}

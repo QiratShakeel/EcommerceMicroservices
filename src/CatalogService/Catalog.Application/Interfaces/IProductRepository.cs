@@ -11,7 +11,7 @@ namespace Ecommerce.Catalog.Application.Interfaces
         Task<IEnumerable<Product>> GetAllAsync(CancellationToken ct);
         Task<List<Product>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct);
         Task AddAsync(Product product, CancellationToken ct);
-        Task UpdateAsync(Product product, CancellationToken ct);
+        Task UpdateAsync(Product product);
         Task DeleteAsync(Product product);
         // Maybe a specific domain requirement:
         //Task ReduceInventoryAsync(Guid productId, int quantity);

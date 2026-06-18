@@ -1,13 +1,11 @@
-﻿using BuildingBlocks.EventBus.Abstractions;
-using BuildingBlocks.EventBus.RabbitMQ;
+﻿using BuildingBlocks.EventBus.RabbitMQ;
 using BuildingBlocks.Shared.Behaviors.Transaction;
 using BuildingBlocks.Shared.Infrastructure;
-using BuildingBlocks.Shared.Infrastructure.Messaging.IntegrationEvents;
 using BuildingBlocks.Shared.Outbox;
-using Ecommerce.Catalog.Application.EventsHandlers;
 using Ecommerce.Catalog.Application.Interfaces;
 using Ecommerce.Catalog.Infrastructure.Persistence.Context;
 using Ecommerce.Catalog.Infrastructure.Persistence.Repositories;
+using Ecommerce.Catalog.Infrastructure.Services.FileStorage;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +26,7 @@ namespace Ecommerce.Catalog.Infrastructure
                     sql =>
                     {
                         sql.EnableRetryOnFailure(
-                            maxRetryCount: 10,
+                            maxRetryCount: 3,
                             maxRetryDelay: TimeSpan.FromSeconds(10),
                             errorNumbersToAdd: null);
                     });
@@ -39,6 +37,7 @@ namespace Ecommerce.Catalog.Infrastructure
             services.AddScoped<IOutboxDbContext>(sp => sp.GetRequiredService<CatalogDbContext>());
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IFileService, LocalFileService>();
             services.AddMediatR(Assembly.GetExecutingAssembly());
             return services;
         }

@@ -27,22 +27,23 @@ namespace Ecommerce.Catalog.Domain.Aggregates
         public DateTime? UpdatedDate { get; private set; }
 
         public Product() { } //by EF
-        public Product(string name, string sku, Money price, string? description = null)
+        public Product(string name, string sku, Money price, int stock, string? description = null)
         {
             SetName(name);
             SetSKU(sku); 
             ChangePrice(price);
             Description = description;
-            Inventory = new ProductInventory(0);
-            //AddDomainEvent(new ProductCreatedDomainEvent(Id, name, sku));
+            Inventory = new ProductInventory(stock);
+            AddDomainEvent(new ProductCreatedDomainEvent(Id, name, sku));
+            Status = ProductStatus.Active;
         }
         // ======== DOMAIN METHODS ========
-        public void UpdateProduct(string name, Money price, string? description = null)
+        public void UpdateProduct(string name, Money price, int stock, string? description = null)
         {
             SetName(name);
             ChangePrice(price);
             Description = description;
-            //AddDomainEvent(new ProductCreatedDomainEvent(Id, name, sku));
+            SetInventory(new ProductInventory(stock));
         }
 
         // ---------- Name & SKU ----------
@@ -97,8 +98,7 @@ namespace Ecommerce.Catalog.Domain.Aggregates
 
         public void RemoveCategory(Guid categoryId)
         {
-            var existing = _productCategories
-                .FirstOrDefault(x => x.CategoryId == categoryId);
+            var existing = _productCategories.FirstOrDefault(x => x.CategoryId == categoryId);
 
             if (existing == null)
                 throw new InvalidProductCategoryException();
@@ -201,6 +201,14 @@ namespace Ecommerce.Catalog.Domain.Aggregates
         {
             Status = ProductStatus.Draft;
             UpdatedDate = DateTime.UtcNow;
+        }
+        public void MarkAsDeleted()
+        {
+            AddDomainEvent(
+                new ProductDeletedDomainEvent(
+                    Id,
+                    Images.Select(x => x.Url).ToList()
+                ));
         }
     }
 }

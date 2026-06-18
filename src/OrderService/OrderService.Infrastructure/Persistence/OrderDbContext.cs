@@ -10,9 +10,9 @@ namespace Ecommerce.Orders.Infrastructure.Persistence.Context
         public OrdersDbContext(DbContextOptions<OrdersDbContext> options)
             : base(options) { }
 
-        public async Task AddMessageAsync(OutboxMessage message)
+        public async Task AddMessageAsync(OutboxMessage message, CancellationToken cancellation)
         {
-            await OutboxMessages.AddAsync(message);
+            await OutboxMessages.AddAsync(message, cancellation);
             await SaveChangesAsync();
         }
         public async Task<List<OutboxMessage>> GetUnprocessedMessagesAsync(int batchSize, CancellationToken ct)

@@ -8,11 +8,56 @@ using Ecommerce.Catalog.API.Grpc;
 using Ecommerce.Catalog.Application;
 using Ecommerce.Catalog.Infrastructure;
 using Ecommerce.Catalog.Infrastructure.Persistence.Context;
+using Ecommerce.Catalog.Infrastructure.Persistence.Seed;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
+using Polly;
+using Polly;
+using Polly.Retry;
 using System;
+//using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
+
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
+
+// --------------------------
+// Add Authentication Validation
+// --------------------------
+    //.AddJwtBearer(options =>
+    //{
+    //    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    //    {
+    //        ValidateIssuer = true,
+    //        ValidIssuers = new[]
+    //        {
+    //            "http://localhost:5014",   // HTTP
+    //            "https://localhost:7210"   // HTTPS
+    //        },
+    //        ValidateAudience = true,
+    //        ValidAudience = "ecommerce_api"
+    //    };
+    //    options.RequireHttpsMetadata = false; // ✅ allow HTTP for dev
+    //});
+builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+builder.Services.AddOpenIddict()
+    .AddValidation(options =>
+    {
+        options.SetIssuer(new Uri(builder.Configuration["OpenIddict:Issuer"]!));
+
+        options.AddAudiences("ecommerce_api");
+
+        options.UseSystemNetHttp(); // required for remote validation
+
+        options.UseAspNetCore();
+    });
+builder.Services.AddAuthorization();
+
 
 // --------------------------
 // Add Infrastructure Layer
@@ -45,28 +90,38 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    // "Grpc" endpoint from launchSettings.json
-    options.ListenAnyIP(5200, listenOptions =>
+//builder.WebHost.ConfigureKestrel(options =>
+//{
+//    AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+//    // "Grpc" endpoint from launchSettings.json
+//    options.ListenAnyIP(5200, listenOptions =>
+//    {
+//        listenOptions.Protocols = HttpProtocols.Http2;
+//        //listenOptions.UseHttps();
+//    });
+//    // REST / browser endpoint
+//    options.ListenAnyIP(5108, listenOptions =>
+//    {
+//        listenOptions.Protocols = HttpProtocols.Http1;
+//    });
+//});
+
+var retryPolicy = new ResiliencePipelineBuilder()
+    .AddRetry(new RetryStrategyOptions
     {
-        listenOptions.Protocols = HttpProtocols.Http2;
-        listenOptions.UseHttps();
-    });
-    // REST / browser endpoint
-    options.ListenAnyIP(5108, listenOptions =>
-    {
-        listenOptions.Protocols = HttpProtocols.Http1;
-    });
-});
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(15),
+        BackoffType = DelayBackoffType.Exponential
+    })
+    .Build();
 
 var app = builder.Build();
+var loggerService = app.Services.GetRequiredService<ILoggerService>();
 
-using (var scope = app.Services.CreateScope())
+await retryPolicy.ExecuteAsync(async token =>
 {
-    var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-    db.Database.Migrate();
-}
+    await CatalogDbSeeder.SeedAsync(app.Services,loggerService);
+});
 
 // Middleware pipeline
 app.UseSharedExceptions();

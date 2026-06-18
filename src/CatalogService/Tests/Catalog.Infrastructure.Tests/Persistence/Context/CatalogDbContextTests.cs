@@ -24,7 +24,8 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Context
             (
                 name: "New Product",
                 sku: "sku-002",
-                price: new BuildingBlocks.Shared.Infrastructure.Money(10)
+                price: new BuildingBlocks.Shared.Infrastructure.Money(10),
+                stock: 10
             );
 
             // Act
@@ -51,7 +52,7 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Context
             };
 
             // Act
-            await _fixture.DbContext.AddMessageAsync(message);
+            await _fixture.DbContext.AddMessageAsync(message,CancellationToken.None);
             var unprocessed = await _fixture.DbContext.GetUnprocessedMessagesAsync(10, default);
 
             // Assert
@@ -70,7 +71,7 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Context
                 Content = "{}"
             };
 
-            await _fixture.DbContext.AddMessageAsync(message);
+            await _fixture.DbContext.AddMessageAsync(message, CancellationToken.None);
 
             // Act
             await _fixture.DbContext.MarkAsProcessedAsync(message, default);

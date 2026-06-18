@@ -7,9 +7,9 @@ WORKDIR EcommerceMicroservices/
 # COPY src/CatalogService/Catalog.Infrastructure/*.csproj src/CatalogService/Catalog.Infrastructure/
 # COPY src/CatalogService/Catalog.Domain/*.csproj src/CatalogService/Catalog.Domain/
 
-COPY building-blocks/ building-blocks/
-COPY src/CatalogService/ src/CatalogService/
-
+# COPY building-blocks/ building-blocks/
+# COPY src/CatalogService/ src/CatalogService/
+COPY . .
 # Restore only API project
 RUN dotnet restore "src/CatalogService/Catalog.API/Catalog.API.csproj"
 
@@ -22,5 +22,5 @@ RUN dotnet publish "src/CatalogService/Catalog.API/Catalog.API.csproj" -c Releas
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
-EXPOSE 5000
+EXPOSE 5000 5200
 ENTRYPOINT ["dotnet","Catalog.API.dll"]

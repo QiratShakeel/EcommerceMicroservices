@@ -1,4 +1,5 @@
 using BuildingBlocks.Shared.Infrastructure;
+using BuildingBlocks.Shared.Results;
 using Ecommerce.Orders.Domain.Enums;
 using Ecommerce.Orders.Domain.Events;
 
@@ -51,14 +52,21 @@ namespace Ecommerce.Orders.Domain.Aggregates
             Status = OrderStatus.Confirmed;
 
             AddDomainEvent(
-                new OrderCreatedDomainEvent(Id, CustomerId, Total, _orderItems)
-            );
+                new OrderCreatedDomainEvent(Id, CustomerId, Total));
+        }
+        public void Complete()
+        {
+            if (Status == OrderStatus.Cancelled)
+                throw new InvalidOperationException("Only confirmed orders can be completed.");            
+            Status = OrderStatus.Completed;
+            var items = _orderItems.Select(i => (i.ProductId, i.Quantity)).ToList();
+            AddDomainEvent(new OrderCompletedDomainEvent(Id, items));
         }
         public void Cancel()
         {
             if (Status == OrderStatus.Completed)
                 throw new InvalidOperationException("Completed order cannot be cancelled.");
-
+            
             Status = OrderStatus.Cancelled;
         }
     }

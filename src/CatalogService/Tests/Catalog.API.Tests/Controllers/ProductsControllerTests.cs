@@ -19,26 +19,27 @@ public class ProductsControllerTests : IClassFixture<CustomWebApplicationFactory
     [Fact]
     public async Task CreateProduct_ShouldReturn201AndProductId()
     {
-        // Arrange
-        var command = new CreateProductCommand(
-            "Test Laptop",
-            "SKU-TEST-001",
-            100m,
-            "Test Description",
-            new List<Guid> { Guid.NewGuid() },
-            new List<ProductImage> { new("https://img.com/a.jpg", "alt", ".jpg") }
-        );
+        var form = new MultipartFormDataContent();
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(command),
-            Encoding.UTF8,
-            "application/json"
-        );
+        form.Add(new StringContent("Test Laptop"), "Name");
+        form.Add(new StringContent("SKU-TEST-001"), "SKU");
+        form.Add(new StringContent("100"), "Price");
+        form.Add(new StringContent("10"), "stock");
+        form.Add(new StringContent("Test Description"), "Desc");
 
-        // Act
-        var response = await _client.PostAsync("/api/products", content);
+        var categoryId = Guid.NewGuid();
+        form.Add(new StringContent(categoryId.ToString()), "CategoryIds");
 
-        // Assert
+        var fileBytes = Encoding.UTF8.GetBytes("fake image");
+
+        var fileContent = new ByteArrayContent(fileBytes);
+        fileContent.Headers.ContentType =
+            new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+
+        form.Add(fileContent, "Images", "test.jpg");
+
+        var response = await _client.PostAsync("/api/products", form);
+
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Get Location header

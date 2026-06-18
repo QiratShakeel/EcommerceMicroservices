@@ -29,6 +29,7 @@ namespace Catalog.Application.Tests.Queries
             name: "Test Product",
             sku: "SKU-123",
             price: new Money(100),
+            stock: 10,
             description: "Test Desc"
             );
             var query = new GetProductByIdQuery(productId);

@@ -3,7 +3,7 @@
 **/obj/
 
 # Test results
-**/TestResults/
+**/Tests/
 
 # User-specific / IDE
 .vs/
@@ -15,11 +15,15 @@
 .git/
 .gitignore
 
-# Docker / CI artifacts
+# Node (agar React use ho)
 **/node_modules/
 
 # Logs
-*.log
+**/*.log
+
+# Docker
+deployment/docker-compose.yml
+Dockerfile*
 
 # OS files
 .DS_Store

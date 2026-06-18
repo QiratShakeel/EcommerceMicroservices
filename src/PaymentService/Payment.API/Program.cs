@@ -7,10 +7,32 @@ using Ecommerce.Payment.API.Extensions;
 using Ecommerce.Payment.Application;
 using Ecommerce.Payment.Infrastructure;
 using Ecommerce.Payment.Infrastructure.Persistence.Context;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Validation.AspNetCore;
+using Polly;
+using Polly.Retry;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --------------------------
+// Add Authentication Validation
+// --------------------------
+builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+builder.Services.AddOpenIddict()
+    .AddValidation(options =>
+    {
+        options.SetIssuer(new Uri(builder.Configuration["OpenIddict:Issuer"]!));
+
+        options.AddAudiences("ecommerce_api");
+
+        options.UseSystemNetHttp(); // required for remote validation
+
+        options.UseAspNetCore();
+    });
+builder.Services.AddAuthorization();
+
 
 // --------------------------
 // Add Infrastructure Layer
@@ -32,39 +54,30 @@ builder.Services.AddSharedBehaviors();
 builder.Services.AddRabbitMQEventBus(builder.Configuration);
 
 // --------------------------
-// Add gRPC
-// --------------------------
-//builder.Services.AddGrpc();
-
-// --------------------------
 // Add Controllers, Swagger, etc.
 // --------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 
-//builder.WebHost.ConfigureKestrel(options =>
-//{
-//    // "Grpc" endpoint from launchSettings.json
-//    options.ListenAnyIP(5200, listenOptions =>
-//    {
-//        listenOptions.Protocols = HttpProtocols.Http2;
-//        listenOptions.UseHttps();
-//    });
-//    // REST / browser endpoint
-//    options.ListenAnyIP(5108, listenOptions =>
-//    {
-//        listenOptions.Protocols = HttpProtocols.Http1;
-//    });
-//});
+
+var retryPolicy = new ResiliencePipelineBuilder()
+    .AddRetry(new RetryStrategyOptions
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(15),
+        BackoffType = DelayBackoffType.Exponential
+    })
+    .Build();
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<PaymentsDbContext>();
-//    db.Database.Migrate();
-//}
+await retryPolicy.Execute(async () =>
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<PaymentsDbContext>();
+    await db.Database.MigrateAsync();
+});
 
 // Middleware pipeline
 app.UseSharedExceptions();
@@ -79,10 +92,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// --------------------------
-// gRPC endpoints
-// --------------------------
-//app.MapGrpcService<CatalogGrpcService>();
-//app.MapGet("/", () => "Catalog gRPC Service");
 
 app.Run();

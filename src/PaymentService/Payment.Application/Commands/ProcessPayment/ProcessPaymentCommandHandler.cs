@@ -20,18 +20,36 @@ namespace Ecommerce.Payment.Application.Commands
 
         public async Task<Result> Handle(ProcessPaymentCommand request,CancellationToken cancellationToken)
         {
-            var payment = new PaymentEntity(request.OrderId, request.Amount);
+            // 1. Idempotency check
+            if (await _repository.ExistsAsync(request.OrderId))
+                return Result.Failure("Payment already processed for this order");
 
-            // Simulate payment gateway
-            var success = Random.Shared.Next(0, 10) > 2;
+            var payment = new PaymentEntity(request.OrderId,request.CustomerId, request.Amount);
+            var transaction = payment.AddTransaction(request.Amount, "Stripe", "txn_123");
+            try
+            {
+                // Simulate payment gateway
+                var success = Random.Shared.Next(0, 10) > 2;
 
-            if (success)
-                payment.MarkAsCompleted();
-            else
-                payment.MarkAsFailed("Insufficient funds");
+                if (success)
+                {
+                    transaction.MarkSuccess();
+                    payment.MarkAsCompleted();
+                }
+                else
+                {
+                    transaction.MarkFailed();
+                    payment.MarkAsFailed("Transaction Failed");
+                }
 
-            await _repository.AddAsync(payment);
+                await _repository.AddAsync(payment);
 
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Payment processing error: {ex.Message}");
+            }
+            
             return Result.Success();
         }
     }

@@ -16,7 +16,9 @@ namespace BuildingBlocks.Shared.Infrastructure
 
         public Type Resolve(string eventName)
         {
-            return _map.TryGetValue(eventName, out var type) ? type : null;
+            if (!_map.TryGetValue(eventName, out var type))
+                throw new Exception($"Event type not registered for {eventName}");
+            return type;
         }
     }
 }

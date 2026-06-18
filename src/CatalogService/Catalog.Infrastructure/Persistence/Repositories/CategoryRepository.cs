@@ -35,6 +35,11 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Repositories
             return await _context.Categories.FirstOrDefaultAsync(x=>x.Id==id,ct);
         }
 
+        public async Task<bool> HasChildrenAsync(Guid categoryId, CancellationToken token)
+        {
+            return await _context.Categories.AnyAsync(x => x.ParentCategoryId == categoryId, token);
+        }
+
         public async Task<bool> HasProductsAsync(Guid categoryId, CancellationToken ct)
         {
             return await _context.ProductCategories.AnyAsync(x=>x.CategoryId==categoryId,ct);

@@ -25,7 +25,7 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Repositories
             // Do NOT call SaveChangesAsync here; handled by UnitOfWork
         }
 
-        public Task UpdateAsync(Product product, CancellationToken ct)
+        public Task UpdateAsync(Product product)
         {
             _context.Products.Update(product);
             return Task.CompletedTask;

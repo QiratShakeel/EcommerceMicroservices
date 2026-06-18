@@ -12,11 +12,13 @@ namespace Catalog.Application.Tests.Commands
     public class CreateProductHandlerTests
     {
         private readonly Mock<IProductRepository> _repoMock;
+        private readonly Mock<IFileService> _fileServiceMock;
         private readonly IMapper _mapper;
 
         public CreateProductHandlerTests()
         {
             _repoMock = new Mock<IProductRepository>();
+            _fileServiceMock = new Mock<IFileService>();
 
             var config = new MapperConfiguration(cfg =>
             {
@@ -24,9 +26,9 @@ namespace Catalog.Application.Tests.Commands
                    .ForCtorParam("Name", opt => opt.MapFrom(c => c.Name))
                    .ForCtorParam("SKU", opt => opt.MapFrom(c => c.SKU))
                    .ForCtorParam("Price", opt => opt.MapFrom(c => new Money(c.Price)))
-                   .ForCtorParam("Description", opt => opt.MapFrom(c => c.Desc))
-                   .ForMember(p => p.Images, opt => opt.Ignore());
+                   .ForCtorParam("Description", opt => opt.MapFrom(c => c.Desc));
             });
+
             _mapper = config.CreateMapper();
         }
 
@@ -38,37 +40,57 @@ namespace Catalog.Application.Tests.Commands
                 "Laptop",
                 "SKU-001",
                 100m,
+                10,
                 "Some description",
                 new List<Guid> { Guid.NewGuid() },
-                new List<ProductImage>
-                {
-                    new("https://img.com/a.jpg", "alt", ".jpg")
-                }
+                null
             );
 
-            _repoMock.Setup(r => r.IsSkuUniqueAsync(cmd.SKU, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            _repoMock
+                .Setup(x => x.IsSkuUniqueAsync(cmd.SKU, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
-            _repoMock.Setup(r => r.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _repoMock
+                .Setup(x => x.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
-            var handler = new CreateProductHandler(_repoMock.Object, _mapper);
+            var handler = new CreateProductHandler(
+                _repoMock.Object,
+                _mapper,
+                _fileServiceMock.Object);
 
             // Act
             var result = await handler.Handle(cmd, CancellationToken.None);
 
             // Assert
             Assert.True(result.IsSuccess);
-            _repoMock.Verify(r => r.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once);
+
+            _repoMock.Verify(
+                x => x.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [Fact]
-        public async Task Handle_DuplicateSKU_ShouldThrowException()
+        public async Task Handle_DuplicateSku_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            var cmd = new CreateProductCommand( "Laptop", "SKU-001", 100 );
-            _repoMock.Setup(r => r.IsSkuUniqueAsync(cmd.SKU, It.IsAny<CancellationToken>()))
-                     .ReturnsAsync(false);
+            var cmd = new CreateProductCommand(
+                "Laptop",
+                "SKU-001",
+                100m,
+                10,
+                "Description",                
+                null,
+                null);
 
-            var handler = new CreateProductHandler(_repoMock.Object, _mapper);
+            _repoMock
+                .Setup(x => x.IsSkuUniqueAsync(cmd.SKU, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            var handler = new CreateProductHandler(
+                _repoMock.Object,
+                _mapper,
+                _fileServiceMock.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() =>

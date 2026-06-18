@@ -1,67 +1,147 @@
-version: '3.9'
-
 services:
   catalogservice:
     build:
       context: ../../
       dockerfile: deployments/docker/Dockerfiles/CatalogService.Dockerfile
     container_name: catalogservice
+    restart: unless-stopped
     ports:
-      - "5108:5000"
+      - "5108:5000"   #http (swagger)
+      - "5208:5200"   # gRPC
     depends_on:
-      - rabbitmq          
-      - sqlserver          
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5000
+      # - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__CatalogConnection=Server=sqlserver;Database=CatalogDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
       - EventBus__HostName=rabbitmq
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://+:5000
+      - ASPNETCORE_Kestrel__Endpoints__Http__Protocols=Http1
       - ASPNETCORE_Kestrel__Endpoints__Grpc__Url=http://+:5200
       - ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols=Http2
+      - OpenIddict__Issuer=http://identityservice:5003
 
   orderservice: 
     build:
       context: ../../
       dockerfile: deployments/docker/Dockerfiles/OrderService.Dockerfile
     container_name: orderservice
+    restart: unless-stopped
     ports:
       - "5278:5001"
     depends_on:
-      - rabbitmq
-      - sqlserver
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5001
       - ConnectionStrings__OrdersConnection=Server=sqlserver;Database=OrderDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
       - EventBus__HostName=rabbitmq
       - GrpcSettings__CatalogUrl=http://catalogservice:5200
+      - OpenIddict__Issuer=http://identityservice:5003
+
+  paymentservice:
+    build:
+      context: ../../
+      dockerfile: deployments/docker/Dockerfiles/PaymentService.Dockerfile
+    container_name: paymentservice
+    restart: unless-stopped
+    ports:
+      - "5070:5002"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5002
+      - ConnectionStrings__PaymentConnection=Server=sqlserver;Database=PaymentDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - EventBus__HostName=rabbitmq
+      - OpenIddict__Issuer=http://identityservice:5003
+
+  identityservice:
+    build:
+      context: ../../
+      dockerfile: deployments/docker/Dockerfiles/IdentityService.Dockerfile
+    container_name: identityservice
+    restart: unless-stopped
+    ports:
+      - "5014:5003" #Http
+      - "7210:5005" #Https
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5003;https://+:5005
+      - ConnectionStrings__IdentityConnection=Server=sqlserver;Database=IdentityDb;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - EventBus__HostName=rabbitmq
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/identity.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=MySecret123!
+      - OpenIddict__Issuer=http://identityservice:5003
+    volumes:
+      - ../../certs/identity.pfx:/https/identity.pfx:ro
+
+  apigateway:
+    build:
+      context: ../../
+      dockerfile: deployments/docker/Dockerfiles/APIGateway.Dockerfile
+    container_name: apigateway
+    restart: unless-stopped
+    ports:
+      - "5213:5004"
+    depends_on:
+      - identityservice
+      - catalogservice
+      - orderservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5004
+      - OpenIddict__Issuer=http://identityservice:5003
+       # YARP Overrides
+      - ReverseProxy__Clusters__catalogCluster__Destinations__catalog1__Address=http://catalogservice:5000/
+      - ReverseProxy__Clusters__ordersCluster__Destinations__orders1__Address=http://orderservice:5001/
+      - ReverseProxy__Clusters__identityCluster__Destinations__identity1__Address=http://identityservice:5003/
 
   rabbitmq:
     image: "rabbitmq:3-management"
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
-      interval: 10s
-      retries: 5
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 60s
+      retries: 10
+      start_period: 300s
 
   sqlserver:
-    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
+    restart: unless-stopped
     environment:
       SA_PASSWORD: "StrongPass123!"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
-    volumes:
-      - sqlserver-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", " /opt/mssql-tools18/bin/sqlcmd -U sa -P StrongPass123! -C -Q 'SELECT 1' || exit 1"]
-      interval: 10s
+      test:
+        ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P StrongPass123! -C -Q 'SELECT 1' || exit 1"]
+      interval: 20s
+      timeout: 10s
       retries: 10
-      start_period: 10s
-      timeout: 5s  
+      start_period: 60s  
+    volumes:
+    - sqlserver-data:/var/opt/mssql
 
 volumes:
   sqlserver-data:

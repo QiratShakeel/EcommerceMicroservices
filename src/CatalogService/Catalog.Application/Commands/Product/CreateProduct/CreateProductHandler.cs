@@ -11,13 +11,13 @@ namespace Ecommerce.Catalog.Application.Commands
     public class CreateProductHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
     {
         private readonly IProductRepository _repository;
-        //private readonly IUnitOfWork _unitOfWork;
+        private readonly IFileService _fileService;
         private readonly IMapper _mapper;
-        public CreateProductHandler(IProductRepository repository, IMapper mapper)
+        public CreateProductHandler(IProductRepository repository, IMapper mapper, IFileService fileService)
         {
             _repository = repository;
             _mapper= mapper;
-            //_unitOfWork = unitOfWork;
+            _fileService = fileService;
         }
         public async Task<Result<Guid>> Handle(CreateProductCommand cmd, CancellationToken ct)
         {
@@ -36,8 +36,12 @@ namespace Ecommerce.Catalog.Application.Commands
 
                 if (cmd.Images != null)
                 {
-                    foreach (var img in cmd.Images)
-                        product.AddImage(new ProductImage(img.Url, img.AltText, img.FileType));
+                    foreach (var file in cmd.Images)
+                    {
+                        var url = await _fileService.UploadAsync(file, "products");
+
+                        product.AddImage(new ProductImage(url,file.FileName,Path.GetExtension(file.FileName)));
+                    }
                 }
                 //product.AddInventory(0);
                 await _repository.AddAsync(product, ct);

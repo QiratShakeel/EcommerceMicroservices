@@ -27,6 +27,7 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Repositories
                 "Laptop",
                 "SKU-001",
                 new Money(1000),
+                20,
                 "Gaming laptop"
             );
 
@@ -45,8 +46,8 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Repositories
         public async Task GetAllAsync_ShouldReturn_AllProducts()
         {
             _db.Products.AddRange(
-                new Product("A", "SKU-A", new Money(10)),
-                new Product("B", "SKU-B", new Money(20))
+                new Product("A", "SKU-A", new Money(10), 50),
+                new Product("B", "SKU-B", new Money(20),50)
             );
             await _db.SaveChangesAsync();
 
@@ -62,7 +63,7 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Repositories
         {
 
             _db.Products.Add(
-                new Product("Laptop", "SKU-EXIST", new Money(100))
+                new Product("Laptop", "SKU-EXIST", new Money(100), 10)
             );
             await _db.SaveChangesAsync();
 
@@ -87,13 +88,13 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Repositories
         public async Task UpdateAsync_ShouldUpdateProduct()
         {
 
-            var product = new Product("Old", "SKU-OLD", new Money(50));
+            var product = new Product("Old", "SKU-OLD", new Money(50), 10);
             _db.Products.Add(product);
             await _db.SaveChangesAsync();
 
             // Act
-            product.UpdateProduct("New", new Money(100));
-            await _repo.UpdateAsync(product, CancellationToken.None);
+            product.UpdateProduct("New", new Money(100), 20);
+            await _repo.UpdateAsync(product);
             await _db.SaveChangesAsync();
 
             var updated = await _repo.GetByIdAsync(product.Id, CancellationToken.None);
@@ -106,7 +107,7 @@ namespace Ecommerce.Catalog.Infrastructure.Tests.Persistence.Repositories
         [Fact]
         public async Task DeleteAsync_ShouldRemoveProduct()
         {
-            var product = new Product("Laptop", "SKU-DEL", new Money(200));
+            var product = new Product("Laptop", "SKU-DEL", new Money(200), 10);
             _db.Products.Add(product);
             await _db.SaveChangesAsync();
 

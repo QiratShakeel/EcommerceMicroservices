@@ -1,9 +1,11 @@
 using Ecommerce.Catalog.Application.Commands;
 using Ecommerce.Catalog.Application.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 namespace Ecommerce.Catalog.API.Controllers
 {
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
@@ -29,8 +31,9 @@ namespace Ecommerce.Catalog.API.Controllers
             return product == null ? NotFound() : Ok(product);
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductCommand command)
+        public async Task<IActionResult> Create([FromForm] CreateProductCommand command)
         {
             var result = await _mediator.Send(command);
             //if(!result.IsSuccess)
@@ -41,7 +44,7 @@ namespace Ecommerce.Catalog.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateProductCommand command)
+        public async Task<IActionResult> Update(Guid id, [FromForm] UpdateProductCommand command)
         {
             if (id != command.ProductId) return BadRequest();
             var product = await _mediator.Send(command);

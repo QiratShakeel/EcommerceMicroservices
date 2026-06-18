@@ -30,7 +30,7 @@ namespace Ecommerce.Catalog.Application.Commands
                     return Result.Failure($"Product {item.ProductId} not found");
 
                 product.ReduceInventory(item.Quantity); // domain logic inside entity
-                await _repository.UpdateAsync(product, CancellationToken.None);
+                //await _repository.UpdateAsync(product);
             }
             _logger.LogInformation("Reduce Inventory Command Handler {orderitems}", cmd.items);
             return Result.Success();

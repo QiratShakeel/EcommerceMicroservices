@@ -8,9 +8,36 @@ using Ecommerce.Orders.API.Extensions;
 using Ecommerce.Orders.Application;
 using Ecommerce.Orders.Infrastructure;
 using Ecommerce.Orders.Infrastructure.Persistence.Context;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Validation.AspNetCore;
+using Polly;
+using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//enable http for grpc
+if (builder.Environment.IsDevelopment())
+{
+    AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+}
+
+// --------------------------
+// Add Authentication Validation
+// --------------------------
+builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+builder.Services.AddOpenIddict()
+    .AddValidation(options =>
+    {
+        options.SetIssuer(new Uri(builder.Configuration["OpenIddict:Issuer"]!));
+
+        options.AddAudiences("ecommerce_api");
+
+        options.UseSystemNetHttp(); // required for remote validation
+
+        options.UseAspNetCore();
+    });
+builder.Services.AddAuthorization();
 
 // --------------------------
 // Add Infrastructure Layer
@@ -45,13 +72,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 
+var retryPolicy = new ResiliencePipelineBuilder()
+    .AddRetry(new RetryStrategyOptions
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(15),
+        BackoffType = DelayBackoffType.Exponential
+    })
+    .Build();
+
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+await retryPolicy.Execute(async () =>
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
-    db.Database.Migrate();
-}
+    await db.Database.MigrateAsync();
+});
 
 // Middleware pipeline
 app.UseSharedExceptions();

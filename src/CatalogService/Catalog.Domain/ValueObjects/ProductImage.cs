@@ -10,7 +10,7 @@
         private ProductImage() { } // EF
         public ProductImage(string url, string altText, string fileType)
         {
-            if (string.IsNullOrEmpty(url) || !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            if (string.IsNullOrEmpty(url) || !Uri.IsWellFormedUriString(url, UriKind.Relative))
                 throw new ArgumentException("Invalid URL format.", nameof(url));
 
             if (!AllowedFileTypes.Contains(fileType.ToLower()))

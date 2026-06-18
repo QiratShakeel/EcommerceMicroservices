@@ -29,7 +29,9 @@ namespace Ecommerce.Catalog.Application.Queries
                 Id = p.Id,
                 Name = p.Name,
                 Description = p.Description,
-                Price = p.Price.Amount
+                Price = p.Price.Amount,
+                SKU = p.SKU,
+                inventory = new ProductInventoryDto{AvailableStock = p.Inventory.AvailableStock, IsAvailable = p.Inventory.AvailableStock > 0 } 
             }).ToList();
         }
     }

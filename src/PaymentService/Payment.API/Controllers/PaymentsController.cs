@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using Ecommerce.Payment.Application.Commands;
+using Microsoft.AspNetCore.Authorization;
 //using Ecommerce.Payment.Application.Queries;
 namespace Ecommerce.Payment.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/payments")]
     public class PaymentsController : ControllerBase

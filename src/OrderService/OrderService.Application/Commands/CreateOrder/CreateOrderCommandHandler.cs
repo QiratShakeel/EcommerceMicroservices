@@ -8,13 +8,13 @@ using BuildingBlocks.Shared.Grpc.Catalog;
 
 namespace Ecommerce.Orders.Application.Commands
 {
-    public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Result<Guid>>
+    public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommandWithUser, Result<Guid>>
     {
         private readonly IOrderService _orderService;
 
         public CreateOrderCommandHandler(IOrderService orderService) => _orderService = orderService;
 
-        public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(CreateOrderCommandWithUser request, CancellationToken cancellationToken)
         {
             try
             {
@@ -22,7 +22,7 @@ namespace Ecommerce.Orders.Application.Commands
                 var validatedItems = await _orderService.ValidateAndGetProductDetails(request.Items);
 
                 // 2. DB Work (Atomic Transaction)
-                var orderId = await _orderService.PlaceOrderAsync(request.CustomerId, validatedItems);
+                var orderId = await _orderService.PlaceOrderAsync(request.CustomerId, validatedItems, cancellationToken);
 
                 return Result<Guid>.Success(orderId);
             }

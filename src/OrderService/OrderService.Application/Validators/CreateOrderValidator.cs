@@ -4,7 +4,7 @@ using Ecommerce.Orders.Application.Commands;
 namespace Ecommerce.Orders.Application.Validators
 {
     public class CreateOrderValidator
-        : OrderBaseValidator<CreateOrderCommand>
+        : OrderBaseValidator<CreateOrderCommandWithUser>
     {
         public CreateOrderValidator()
         {

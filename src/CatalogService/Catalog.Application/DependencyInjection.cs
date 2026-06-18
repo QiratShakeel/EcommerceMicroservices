@@ -17,11 +17,11 @@ namespace Ecommerce.Catalog.Application
             services.AddAutoMapper(typeof(ApplicationExtensions).Assembly);
             services.AddValidatorsFromAssembly(typeof(ApplicationExtensions).Assembly);
             // Register your event handlers as usual
-            services.AddScoped<IIntegrationEventHandler<OrderCreatedIntegrationEventForCatalog>, OrderCreatedIntegrationEventForCatalogHandler>();
+            services.AddScoped<IIntegrationEventHandler<OrderCompletedIntegrationEvent>, OrderCompletedIntegrationEventConsumer>();
             // Register EventTypeResolver with Catalog-specific mappings
             var mappings = new Dictionary<string, Type>
             {
-                { "order.created.catalog", typeof(OrderCreatedIntegrationEventForCatalog) }
+                { "order.completed", typeof(OrderCompletedIntegrationEvent) }
             };
             services.AddSingleton<IEventTypeResolver>(new EventTypeResolver(mappings));
             return services;

@@ -12,7 +12,7 @@ namespace Ecommerce.Catalog.Application.Mapping
         {
             CreateMap<ProductInventory, ProductInventoryDto>()
                 .ForMember(d => d.IsAvailable, o => o.MapFrom(s => s.AvailableStock > 0));
-            
+                
             CreateMap<Product, ProductDto>()
                 .ForMember(d => d.Price, o => o.MapFrom(s => s.Price.Amount))
                 .ForMember(d => d.inventory, o => o.MapFrom(s => s.Inventory)); ;
@@ -22,6 +22,7 @@ namespace Ecommerce.Catalog.Application.Mapping
                     cmd.Name,
                     cmd.SKU,
                     new Money(cmd.Price),
+                    cmd.stock,
                     cmd.Desc
                     )
             ).ForAllMembers(opt=>opt.Ignore());

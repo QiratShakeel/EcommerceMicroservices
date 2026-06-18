@@ -22,7 +22,8 @@ namespace Ecommerce.Catalog.Application.Tests.Validators
             (
                 Name : "",
                 SKU : "ABC123",
-                Price : 10,
+                Price : 100m,
+                stock:5,
                 Desc: "Description"
             );
 
@@ -42,6 +43,7 @@ namespace Ecommerce.Catalog.Application.Tests.Validators
                 Name: "Product",
                 SKU: "ABC123",
                 Price: 0,
+                stock: 4,
                 Desc: "Description"
             );
 
@@ -59,6 +61,7 @@ namespace Ecommerce.Catalog.Application.Tests.Validators
                 Name : "Product",
                 SKU : "abc",    //lenght or wrong pattern error
                 Price : 10,
+                stock: 2,
                 Desc : "Description"
             );
 
@@ -76,6 +79,7 @@ namespace Ecommerce.Catalog.Application.Tests.Validators
                 Name : "Product",
                 SKU : "SKU12345",
                 Price: 100,
+                stock: 5,
                 Desc: "Valid description"
             );
 

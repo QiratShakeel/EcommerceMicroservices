@@ -8,9 +8,9 @@ WORKDIR EcommerceMicroservices/
 # COPY src/OrderService/OrderService.Domain/ src/OrderService/OrderService.Domain/
 
 # COPY entire building-blocks
-COPY src/OrderService/ src/OrderService/
-COPY building-blocks/ building-blocks/
-
+# COPY src/OrderService/ src/OrderService/
+# COPY building-blocks/ building-blocks/
+COPY . .
 # Restore
 RUN dotnet restore "src/OrderService/OrderService.API/OrderService.API.csproj"
 

@@ -12,7 +12,7 @@ namespace BuildingBlocks.Shared.Outbox
             _context = context;
         }
         
-        public async Task PublishAsync(IIntegrationEvent @event)
+        public async Task PublishAsync(IIntegrationEvent @event, CancellationToken cancellation)
         {
             var message = new OutboxMessage
             {
@@ -20,7 +20,7 @@ namespace BuildingBlocks.Shared.Outbox
                 Content = JsonSerializer.Serialize(@event,@event.GetType(), EventJsonOptions.Default)
             };
 
-            await _context.AddMessageAsync(message);
+            await _context.AddMessageAsync(message, cancellation);
         }
     }
 }

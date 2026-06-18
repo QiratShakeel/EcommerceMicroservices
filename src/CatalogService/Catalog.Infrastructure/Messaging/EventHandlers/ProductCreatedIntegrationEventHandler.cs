@@ -17,7 +17,7 @@ namespace Ecommerce.Catalog.Infrastructure.Messaging.EventHandlers
         public async Task Handle(ProductCreatedDomainEvent notification, CancellationToken ct)
         {
             var integrationEvent = new ProductCreatedIntegrationEvent(notification.ProductId, notification.Name, notification.SKU);  // Convert Domain Event to Integration Event
-            await _outboxPublisher.PublishAsync(integrationEvent); // Publish the Integration Event to a message broker (e.g., RabbitMQ or Kafka)
+            await _outboxPublisher.PublishAsync(integrationEvent, ct); // Publish the Integration Event to a message broker (e.g., RabbitMQ or Kafka)
         }
     }
 }

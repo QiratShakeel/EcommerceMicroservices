@@ -4,7 +4,8 @@ namespace Ecommerce.Orders.Application.Interfaces
 {
     public interface IOrderRepository
     {
-        Task AddAsync(OrderEntity order);
-        Task<OrderEntity?> GetByIdAsync(Guid id);
+        Task AddAsync(OrderEntity order, CancellationToken cancellationToken);
+        Task<OrderEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+        Task UpdateAsync(OrderEntity order);
     }
 }

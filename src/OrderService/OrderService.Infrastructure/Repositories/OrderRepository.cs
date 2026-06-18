@@ -14,10 +14,16 @@ namespace Ecommerce.Orders.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(OrderEntity order)
-        { await _context.Orders.AddAsync(order); }
+        public async Task AddAsync(OrderEntity order, CancellationToken cancellationToken)
+        { await _context.Orders.AddAsync(order, cancellationToken); }
 
-        public async Task<OrderEntity?> GetByIdAsync(Guid id)
-        { return await _context.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == id); }
+        public async Task<OrderEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        { return await _context.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == id, cancellationToken); }
+
+        public Task UpdateAsync(OrderEntity order)
+        {
+            _context.Orders.Update(order);
+            return Task.CompletedTask;
+        }
     }
 }

@@ -18,11 +18,11 @@ namespace Ecommerce.Catalog.Infrastructure.Persistence.Configurations
             // Optional: configure relationships (if needed)
             builder.HasOne(pc=>pc.Product)
                    .WithMany(pc=>pc.Categories) // private field in Product
-                   .HasForeignKey(pc => pc.ProductId).OnDelete(DeleteBehavior.Restrict);
+                   .HasForeignKey(pc => pc.ProductId).OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(pc=>pc.Category) // if you have Category entity
                    .WithMany()
-                   .HasForeignKey(pc => pc.CategoryId).OnDelete(DeleteBehavior.Restrict);
+                   .HasForeignKey(pc => pc.CategoryId).OnDelete(DeleteBehavior.Cascade);
 
             //builder.Metadata.FindNavigation(nameof(ProductCategory.Product))?.SetPropertyAccessMode(PropertyAccessMode.Field);
             //builder.Metadata.FindNavigation(nameof(ProductCategory.Category))?.SetPropertyAccessMode(PropertyAccessMode.Field);

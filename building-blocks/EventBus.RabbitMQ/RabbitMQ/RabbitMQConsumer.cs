@@ -1,13 +1,13 @@
-using Microsoft.Extensions.Hosting;
+using BuildingBlocks.EventBus.Abstractions;
+using BuildingBlocks.Shared.Behaviors.Logging;
+using BuildingBlocks.Shared.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using BuildingBlocks.EventBus.Abstractions;
-using BuildingBlocks.Shared.Infrastructure;
-using BuildingBlocks.Shared.Behaviors.Logging;
 
 namespace BuildingBlocks.EventBus.RabbitMQ
 {
@@ -18,16 +18,10 @@ namespace BuildingBlocks.EventBus.RabbitMQ
         private readonly EventBusOptions _options;
         private readonly IEventTypeResolver _resolver;
         private readonly ILoggerService _logger;
-        private IChannel? _channel;
 
-        // 🔑 EventName → EventType map
-        //private static readonly Dictionary<string, Type> _eventTypes = new()
-        //{
-        //    { nameof(OrderCreatedIntegrationEvent), typeof(OrderCreatedIntegrationEvent) }
-        //    // future events yahan add karna
-        //};
-
-        public RabbitMQConsumer(IServiceScopeFactory scopeFactory,RabbitMQConnection connection,IOptions<EventBusOptions> options, IEventTypeResolver resolver, ILoggerService logger)
+        private readonly List<IChannel> _channels = new();
+        private readonly Dictionary<IChannel, string> _consumerTags = new();
+        public RabbitMQConsumer(IServiceScopeFactory scopeFactory,RabbitMQConnection connection,IOptions<EventBusOptions> options,IEventTypeResolver resolver,ILoggerService logger)
         {
             _scopeFactory = scopeFactory;
             _connection = connection;
@@ -38,63 +32,167 @@ namespace BuildingBlocks.EventBus.RabbitMQ
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _channel = await _connection.CreateChannelAsync();
-
-            await _channel.ExchangeDeclareAsync(exchange: _options.ExchangeName,type: ExchangeType.Topic,durable: true);
-
-            // 👇 Consumer-specific queue
-            //var queueName = _options.QueueName;
-            foreach (var sub in _options.Subscriptions)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await _channel.QueueDeclareAsync(queue: sub.QueueName, durable:true, exclusive:false, autoDelete:false);
-                await _channel.QueueBindAsync(queue:sub.QueueName,exchange:_options.ExchangeName,routingKey:sub.EventName);
-            }
+                try
+                {
+                    await StartConsumers(stoppingToken);
 
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += OnMessageReceived;
+                    _logger.LogInformation("RabbitMQ Consumers started successfully.");
 
-            foreach (var sub in _options.Subscriptions)
-            {
-                await _channel.BasicConsumeAsync(queue: sub.QueueName, autoAck: false, consumer: consumer);
+                    await Task.Delay(Timeout.Infinite,stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,"RabbitMQ consumer crashed. Restarting in 5 seconds.");
+
+                    await DisposeChannels();
+
+                    await Task.Delay(
+                        TimeSpan.FromSeconds(5),
+                        stoppingToken);
+                }
             }
         }
 
-        private async Task OnMessageReceived(object sender, BasicDeliverEventArgs args)
+        private async Task StartConsumers(CancellationToken token)
+        {
+            foreach (var sub in _options.Subscriptions)
+            {
+                var channel = await _connection.CreateChannelAsync();
+
+                _channels.Add(channel);
+
+                await channel.ExchangeDeclareAsync(exchange: _options.ExchangeName,type: ExchangeType.Topic,durable: true);
+
+                await channel.QueueDeclareAsync(queue: sub.QueueName,durable: true,exclusive: false,autoDelete: false);
+
+                await channel.QueueBindAsync(queue: sub.QueueName,exchange: _options.ExchangeName,routingKey: sub.EventName);
+
+                // Fair dispatch
+                await channel.BasicQosAsync(prefetchSize: 0,prefetchCount: 1,global: false);
+
+                var consumer = new AsyncEventingBasicConsumer(channel);
+
+                consumer.ReceivedAsync += async (_, args) =>
+                {
+                    await HandleMessage(args, channel);
+                };
+
+                var consumerTag = await channel.BasicConsumeAsync(queue: sub.QueueName,autoAck: false,consumer: consumer);
+                _consumerTags[channel] = consumerTag;
+                _logger.LogInformation("Consumer registered. Queue={Queue}, ConsumerTag={ConsumerTag}",sub.QueueName,consumerTag);
+            }
+        }
+
+        private async Task HandleMessage(BasicDeliverEventArgs args,IChannel channel)
         {
             try
             {
-                var eventName = args.RoutingKey;
+                var routingKey = args.RoutingKey;
 
-                //if (!_eventTypes.TryGetValue(eventName, out var eventType))
-                //    throw new Exception($"Unknown event: {eventName}");
-                var eventType = _resolver.Resolve(eventName);
+                var eventType = _resolver.Resolve(routingKey);
 
-                var message = Encoding.UTF8.GetString(args.Body.ToArray());
-                _logger.LogInformation("RabbitmqConsumer: Received message: {eventName} | {eventType} |{Message}", eventName, eventType ,message);
-                var @event = JsonSerializer.Deserialize(message, eventType, EventJsonOptions.Default)!;
-                _logger.LogInformation("RabbitmqConsumer: Deserialized event: {@event}", @event);
+                if (eventType == null)
+                {
+                    throw new Exception(
+                        $"No event type registered for routing key {routingKey}");
+                }
+
+                var message =Encoding.UTF8.GetString(args.Body.ToArray());
+
+                var @event = JsonSerializer.Deserialize(message,eventType,EventJsonOptions.Default);
+
+                if (@event == null)
+                {
+                    throw new Exception($"Failed to deserialize event {routingKey}");
+                }
 
                 using var scope = _scopeFactory.CreateScope();
 
-                var handlerType = typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
-                _logger.LogInformation($"RabbitmqConsumer: handlerType {handlerType}");
-                dynamic handler = scope.ServiceProvider.GetRequiredService(handlerType);
+                var handlerType =typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
+
+                dynamic handler =scope.ServiceProvider.GetRequiredService(handlerType);
+
                 await handler.Handle((dynamic)@event);
 
-                await _channel!.BasicAckAsync(args.DeliveryTag, false);
+                await channel.BasicAckAsync(deliveryTag: args.DeliveryTag,multiple: false);
+
+                _logger.LogInformation("Message processed successfully. Event={Event}",routingKey);
             }
-            catch
+            catch (Exception ex)
             {
-                await _channel!.BasicNackAsync(args.DeliveryTag, false, false);
+                _logger.LogError(ex,"Failed processing message {RoutingKey}",args.RoutingKey);
+
+                // Retry storm avoid
+                await channel.BasicRejectAsync(deliveryTag: args.DeliveryTag,requeue: false);
             }
+        }
+
+        private async Task DisposeChannels()
+        {
+            foreach (var item in _consumerTags)
+            {
+                try
+                {
+                    var channel = item.Key;
+                    var consumerTag = item.Value;
+
+                    if (channel.IsOpen)
+                    {
+                        await channel.BasicCancelAsync(consumerTag);
+
+                        _logger.LogInformation(
+                            "Consumer cancelled. ConsumerTag={ConsumerTag}",
+                            consumerTag);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Failed to cancel consumer.", ex);
+                }
+            }
+
+            foreach (var channel in _channels)
+            {
+                try
+                {
+                    if (channel.IsOpen)
+                    {
+                        await channel.CloseAsync();
+                    }
+                    channel.Dispose();
+                }
+                catch
+                {
+                }
+            }
+
+            _consumerTags.Clear();
+            _channels.Clear();
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            if (_channel is not null)
-                await _channel.CloseAsync();
+            await DisposeChannels();
 
             await base.StopAsync(cancellationToken);
+        }
+
+        public override void Dispose()
+        {
+            foreach (var channel in _channels)
+            {
+                channel.Dispose();
+            }
+
+            _channels.Clear();
+
+            base.Dispose();
         }
     }
 }

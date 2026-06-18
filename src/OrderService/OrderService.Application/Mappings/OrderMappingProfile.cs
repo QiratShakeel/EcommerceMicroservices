@@ -17,7 +17,7 @@ namespace Ecommerce.Orders.Application.Mapping
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow)); // set current time
 
             // Map CreateOrderCommand -> OrderEntity
-            CreateMap<CreateOrderCommand, OrderEntity>()
+            CreateMap<CreateOrderCommandWithUser, OrderEntity>()
                 .ConstructUsing(cmd => new OrderEntity(cmd.CustomerId))
                 .ForAllMembers(opt => opt.Ignore());
 

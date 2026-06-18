@@ -15,7 +15,7 @@ namespace Ecommerce.Payment.Infrastructure.Persistence.Context
         public PaymentsDbContext(DbContextOptions<PaymentsDbContext> options)
             : base(options) { }
 
-        public async Task AddMessageAsync(OutboxMessage message)
+        public async Task AddMessageAsync(OutboxMessage message, CancellationToken cancellation)
         {
             await OutboxMessages.AddAsync(message);
             await SaveChangesAsync();

@@ -1,8 +1,9 @@
-using Ecommerce.Catalog.Domain.ValueObjects;
-using Ecommerce.Catalog.Application.Interfaces;
-using MediatR;
-using BuildingBlocks.Shared.Results;
 using BuildingBlocks.Shared.Infrastructure;
+using BuildingBlocks.Shared.Results;
+using Ecommerce.Catalog.Application.Interfaces;
+using Ecommerce.Catalog.Domain.ValueObjects;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Ecommerce.Catalog.Application.Commands
 {
@@ -10,9 +11,10 @@ namespace Ecommerce.Catalog.Application.Commands
         Guid ProductId,
         string Name,
         decimal Price,
+        int stock,
         string? Desc,
         List<Guid>? CategoryIds,
-        List<ProductImage>? Images
+        List<IFormFile>? Images
     ) : ICommand<Result<Guid>>, IProductRequest;
 
 }

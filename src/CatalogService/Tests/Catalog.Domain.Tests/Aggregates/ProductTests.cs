@@ -16,7 +16,7 @@ namespace Catalog.Domain.Tests.Aggregates
         {
             var price = new Money(100);
 
-            var product = new Product("Laptop", "SKU-001", price, "desc");
+            var product = new Product("Laptop", "SKU-001", price, 10,"desc");
 
             Assert.Equal("Laptop", product.Name);
             Assert.Equal("SKU-001", product.SKU);
@@ -30,13 +30,13 @@ namespace Catalog.Domain.Tests.Aggregates
             var price = new Money(100);
 
             Assert.Throws<ProductNameRequiredException>(() =>
-                new Product("", "SKU-001", price));
+                new Product("", "SKU-001", price, 10));
         }
 
         [Fact]
         public void ChangePrice_ShouldRaisePriceChangedEvent()
         {
-            var product = new Product("Laptop", "SKU-001", new Money(100));
+            var product = new Product("Laptop", "SKU-001", new Money(100), 15);
 
             product.ChangePrice(new Money(150));
 
@@ -47,7 +47,7 @@ namespace Catalog.Domain.Tests.Aggregates
         [Fact]
         public void AddCategory_ShouldAddCategory()
         {
-            var product = new Product("Laptop", "SKU-001", new Money(100));
+            var product = new Product("Laptop", "SKU-001", new Money(100), 10);
 
             product.AddCategory(Guid.NewGuid());
 
@@ -57,7 +57,7 @@ namespace Catalog.Domain.Tests.Aggregates
         [Fact]
         public void AddDuplicateCategory_ShouldThrow()
         {
-            var product = new Product("Laptop", "SKU-001", new Money(100));
+            var product = new Product("Laptop", "SKU-001", new Money(100), 10); 
             var categoryid= Guid.NewGuid(); 
             product.AddCategory(categoryid);
 
@@ -68,7 +68,7 @@ namespace Catalog.Domain.Tests.Aggregates
         [Fact]
         public void AddImage_WithDuplicateUrl_ShouldThrow()
         {
-            var product = new Product("Laptop", "SKU-001", new Money(100));
+            var product = new Product("Laptop", "SKU-001", new Money(100), 10);
             var image = new ProductImage("https://img.com/a.jpg", "alt", ".jpg");
 
             product.AddImage(image);
@@ -80,7 +80,7 @@ namespace Catalog.Domain.Tests.Aggregates
         [Fact]
         public void Publish_WithMissingInventory_ShouldThrow()
         {
-            var product = new Product("Laptop", "SKU-001", new Money(100));
+            var product = new Product("Laptop", "SKU-001", new Money(100), 10);
             product.AddImage(new ProductImage("https://img.com/a.jpg", "alt", ".jpg"));
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -90,7 +90,7 @@ namespace Catalog.Domain.Tests.Aggregates
         [Fact]
         public void Publish_WithValidData_ShouldActivateProduct()
         {
-            var product = new Product("Laptop", "SKU-001", new Money(100));
+            var product = new Product("Laptop", "SKU-001", new Money(100), 10);
             product.AddImage(new ProductImage("https://img.com/a.jpg", "alt", ".jpg"));
             product.SetInventory(new ProductInventory(10));
 
@@ -103,7 +103,7 @@ namespace Catalog.Domain.Tests.Aggregates
         public void Publish_Product_ShouldRaise_ProductPublishedEvent()
         {
             // Arrange
-            var product = new Product("Laptop", "SKU-001", new Money(100));
+            var product = new Product("Laptop", "SKU-001", new Money(100), 10);
             product.AddImage(new ProductImage("https://img.com/a.jpg", "alt", ".jpg"));
             product.SetInventory(new ProductInventory(10));
 

@@ -28,12 +28,12 @@ namespace BuildingBlocks.EventBus.RabbitMQ
             await channel.ExchangeDeclareAsync(exchange: _options.ExchangeName,type: ExchangeType.Topic,durable: true);
 
             var eventName = @event.GetType().Name;
-            _logger.LogInformation("Rabbitmqeventbus eventName: {eventName} | {@event}",eventName, @event);
+
             if (!_options.RoutingKeys.TryGetValue(eventName, out var routingKey))
                 throw new Exception($"Routing key not configured for event {eventName}");
             
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(@event, @event.GetType(), EventJsonOptions.Default));
-            _logger.LogInformation("Rabbitmq event type: {Type} | Payload: {Payload}", @event.GetType().FullName, JsonSerializer.Serialize(@event, @event.GetType(), EventJsonOptions.Default));
+
             var properties = new BasicProperties
             {
                 DeliveryMode = DeliveryModes.Persistent

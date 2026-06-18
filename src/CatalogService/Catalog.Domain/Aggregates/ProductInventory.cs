@@ -7,7 +7,7 @@
         public int StockQuantity { get; private set; }
         public int? ReservedQuantity { get; private set; }
         public string? WarehouseLocation { get; private set; }
-        public int? AvailableStock => StockQuantity - ReservedQuantity;
+        public int? AvailableStock => StockQuantity - (ReservedQuantity ?? 0);
 
         private ProductInventory() { } // REQUIRED for EF
         public ProductInventory(int stock, string? location=null)
@@ -17,7 +17,7 @@
             //ProductId = productId;
             StockQuantity = stock;
             ReservedQuantity = 0;
-            WarehouseLocation = location;
+            WarehouseLocation = "A1-Rack-1";
         }
 
         public void AddStock(int amount)
