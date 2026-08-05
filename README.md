@@ -9,7 +9,7 @@
 ## Overview
 This project is a production-inspired E-Commerce backend built with ASP.NET Core using a microservices architecture. It demonstrates how independent services communicate through synchronous (gRPC) and asynchronous (RabbitMQ) messaging while following modern backend design principles such as Clean Architecture, Domain-Driven Design (DDD), CQRS, and the Transactional Outbox Pattern. The solution includes an API Gateway, JWT/OIDC authentication, Dockerized deployment, and automated testing, providing a practical example of building scalable, maintainable, and event-driven distributed systems.
 
-![Architecture][docs/images/]
+![Architecture](docs/images/architecture.png)
 
 ## Demo
 ![Demo](docs/images/demo.gif)
