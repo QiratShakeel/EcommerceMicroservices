@@ -4,10 +4,12 @@ using MediatR;
 
 public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, bool>
 {
-    private readonly IProductRepository _repository;
+    private readonly IProductQueries _queries;
+    private readonly IProductCommandRepository _repository;
 
-    public DeleteProductHandler(IProductRepository repository)
+    public DeleteProductHandler(IProductQueries queries, IProductCommandRepository repository)
     {
+        _queries = queries;
         _repository = repository;
     }
 
@@ -15,7 +17,7 @@ public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, bool>
         DeleteProductCommand cmd,
         CancellationToken ct)
     {
-        var product = await _repository.GetByIdAsync(cmd.prodId, ct);
+        var product = await _queries.GetByIdAsync(cmd.prodId, ct);
 
         if (product == null)
             return false;

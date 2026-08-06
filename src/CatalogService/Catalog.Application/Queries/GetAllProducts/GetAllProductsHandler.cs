@@ -11,28 +11,29 @@ namespace Ecommerce.Catalog.Application.Queries
 {
     public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, List<ProductDto>>
     {
-        private readonly IProductRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IProductQueries _queries;
+        //private readonly IMapper _mapper;
 
-        public GetAllProductsQueryHandler(IProductRepository repository,IMapper mapper)
+        public GetAllProductsQueryHandler(IProductQueries queries)
         {
-            _repository = repository;
-            _mapper = mapper;
+            _queries = queries;
+            //_mapper = mapper;
         }
 
         public async Task<List<ProductDto>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
         {
-            var products = await _repository.GetAllAsync(cancellationToken);
+            var products = await _queries.GetAllAsync(cancellationToken);
+            return products.ToList();
             //return _mapper.Map<ProductDto>(products);
-            return products.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                Price = p.Price.Amount,
-                SKU = p.SKU,
-                inventory = new ProductInventoryDto{AvailableStock = p.Inventory.AvailableStock, IsAvailable = p.Inventory.AvailableStock > 0 } 
-            }).ToList();
+            //return products.Select(p => new ProductDto
+            //{
+            //    Id = p.Id,
+            //    Name = p.Name,
+            //    Description = p.Description,
+            //    Price = p.Price.Amount,
+            //    SKU = p.SKU,
+            //    inventory = new ProductInventoryDto{AvailableStock = p.Inventory.AvailableStock, IsAvailable = p.Inventory.AvailableStock > 0 } 
+            //}).ToList();
         }
     }
 }

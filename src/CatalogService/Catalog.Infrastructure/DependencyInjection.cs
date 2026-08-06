@@ -35,7 +35,8 @@ namespace Ecommerce.Catalog.Infrastructure
             services.AddHostedService<RabbitMQConsumer>();
             services.AddScoped<IUnitOfWork, UnitOfWork<CatalogDbContext>>();
             services.AddScoped<IOutboxDbContext>(sp => sp.GetRequiredService<CatalogDbContext>());
-            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductCommandRepository, ProductCommandRepository>();
+            services.AddScoped<IProductQueries, ProductQueries>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IFileService, LocalFileService>();
             services.AddMediatR(Assembly.GetExecutingAssembly());

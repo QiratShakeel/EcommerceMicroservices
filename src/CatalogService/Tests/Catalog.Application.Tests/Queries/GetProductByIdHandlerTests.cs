@@ -11,12 +11,12 @@ namespace Catalog.Application.Tests.Queries
 {
     public class GetProductByIdHandlerTests
     {
-        private readonly Mock<IProductRepository> _repoMock;
+        private readonly Mock<IProductQueries> _repoMock;
         private readonly IMapper _mapper;
 
         public GetProductByIdHandlerTests()
         {
-            _repoMock = new Mock<IProductRepository>();
+            _repoMock = new Mock<IProductQueries>();
             var config = new MapperConfiguration(cfg => cfg.CreateMap<Product, ProductDto>().ForMember(dest=>dest.Price, opt=>opt.MapFrom(src=>src.Price.Amount)));
             _mapper = config.CreateMapper();
         }

@@ -11,19 +11,21 @@ namespace Ecommerce.Catalog.Application.Commands
 {
     public class UpdatebProductHandler : IRequestHandler<UpdateProductCommand, Result<Guid>>
     {
-        private readonly IProductRepository _repository;
+        private readonly IProductCommandRepository _repository;
+        private readonly IProductQueries _queries;
         private readonly IFileService _fileService;
-        public UpdatebProductHandler(IProductRepository repository, IFileService fileService)
+        public UpdatebProductHandler(IProductCommandRepository repository, IFileService fileService, IProductQueries queries)
         {
             _repository = repository;
             //_mapper = mapper;
             _fileService= fileService;
+            _queries = queries;
         }
         public async Task<Result<Guid>> Handle(UpdateProductCommand cmd, CancellationToken ct)
         {
             try
             {
-                var product = await _repository.GetByIdAsync(cmd.ProductId, ct);
+                var product = await _queries.GetByIdAsync(cmd.ProductId, ct);
                 if (product == null)
                     throw new InvalidOperationException("Product Not Found");
                 product.UpdateProduct(cmd.Name, new Money(cmd.Price), cmd.stock,cmd.Desc);

@@ -10,22 +10,24 @@ namespace Ecommerce.Catalog.Application.Commands
 {
     public class CreateProductHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
     {
-        private readonly IProductRepository _repository;
+        private readonly IProductCommandRepository _repository;
+        private readonly IProductQueries _queries;
         private readonly IFileService _fileService;
         private readonly IMapper _mapper;
-        public CreateProductHandler(IProductRepository repository, IMapper mapper, IFileService fileService)
+        public CreateProductHandler(IProductCommandRepository repository, IMapper mapper, IFileService fileService, IProductQueries queries)
         {
             _repository = repository;
             _mapper= mapper;
             _fileService = fileService;
+            _queries = queries;
         }
         public async Task<Result<Guid>> Handle(CreateProductCommand cmd, CancellationToken ct)
         {
             try
             {
 
-                if (!await _repository.IsSkuUniqueAsync(cmd.SKU, ct))
-                    throw new InvalidOperationException("SKU must be unique");
+                if (!await _queries.IsSkuUniqueAsync(cmd.SKU, ct))
+                    return Result<Guid>.Failure("SKU must be unique");
                 var product = _mapper.Map<Product>(cmd);    //automapper 
 
                 if (cmd.CategoryIds != null)
@@ -40,7 +42,7 @@ namespace Ecommerce.Catalog.Application.Commands
                     {
                         var url = await _fileService.UploadAsync(file, "products");
 
-                        product.AddImage(new ProductImage(url,file.FileName,Path.GetExtension(file.FileName)));
+                        product.AddImage(new ProductImage(url, file.FileName, Path.GetExtension(file.FileName)));
                     }
                 }
                 //product.AddInventory(0);
@@ -48,7 +50,8 @@ namespace Ecommerce.Catalog.Application.Commands
                 product.MarkAsCreated();
                 return Result<Guid>.Success(product.Id);
             }
-            catch (DomainException ex) {
+            catch (DomainException ex)
+            {
                 return Result<Guid>.Failure(ex.Message);
             }
         }

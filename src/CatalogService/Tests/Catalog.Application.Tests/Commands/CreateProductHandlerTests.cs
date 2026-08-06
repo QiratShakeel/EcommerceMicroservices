@@ -11,13 +11,15 @@ namespace Catalog.Application.Tests.Commands
 {
     public class CreateProductHandlerTests
     {
-        private readonly Mock<IProductRepository> _repoMock;
+        private readonly Mock<IProductCommandRepository> _repoMock;
+        private readonly Mock<IProductQueries> _queriesMock;
         private readonly Mock<IFileService> _fileServiceMock;
         private readonly IMapper _mapper;
 
         public CreateProductHandlerTests()
         {
-            _repoMock = new Mock<IProductRepository>();
+            _repoMock = new Mock<IProductCommandRepository>();
+            _queriesMock = new Mock<IProductQueries>();
             _fileServiceMock = new Mock<IFileService>();
 
             var config = new MapperConfiguration(cfg =>
@@ -46,7 +48,7 @@ namespace Catalog.Application.Tests.Commands
                 null
             );
 
-            _repoMock
+            _queriesMock
                 .Setup(x => x.IsSkuUniqueAsync(cmd.SKU, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
@@ -57,7 +59,8 @@ namespace Catalog.Application.Tests.Commands
             var handler = new CreateProductHandler(
                 _repoMock.Object,
                 _mapper,
-                _fileServiceMock.Object);
+                _fileServiceMock.Object,
+                _queriesMock.Object);
 
             // Act
             var result = await handler.Handle(cmd, CancellationToken.None);
@@ -83,14 +86,15 @@ namespace Catalog.Application.Tests.Commands
                 null,
                 null);
 
-            _repoMock
+            _queriesMock
                 .Setup(x => x.IsSkuUniqueAsync(cmd.SKU, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var handler = new CreateProductHandler(
                 _repoMock.Object,
                 _mapper,
-                _fileServiceMock.Object);
+                _fileServiceMock.Object,
+                _queriesMock.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() =>

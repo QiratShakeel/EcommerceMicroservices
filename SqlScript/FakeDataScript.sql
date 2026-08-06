@@ -92,3 +92,4 @@ FROM (
     JOIN catalog.ProductImages pi ON p.Id = pi.ProductId
 ) t
 WHERE rn = 1;
+

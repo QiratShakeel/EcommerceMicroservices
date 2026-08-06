@@ -8,20 +8,22 @@ namespace Ecommerce.Catalog.Application.Commands
 {
     public class ReduceInventoryHandler : IRequestHandler<ReduceInventoryCommand, Result>
     {
-        private readonly IProductRepository _repository;
+        private readonly IProductCommandRepository _repository;
+        private readonly IProductQueries _queries;
         private readonly ILoggerService _logger;
 
-        public ReduceInventoryHandler(IProductRepository repository, ILoggerService logger)
+        public ReduceInventoryHandler(IProductCommandRepository repository, ILoggerService logger, IProductQueries queries)
         {
             _repository = repository;
-            _logger = logger; 
+            _logger = logger;
+            _queries = queries;
         }
 
         public async Task<Result> Handle(ReduceInventoryCommand cmd, CancellationToken ct)
         {
             _logger.LogInformation("Reduce Inventory Command Handler {orderitems}", cmd.items);
             var productIds = cmd.items.Select(x => x.ProductId).ToList();  
-            var products = await _repository.GetByIdsAsync(productIds, ct);
+            var products = await _queries.GetByIdsAsync(productIds, ct);
 
             foreach (var item in cmd.items)
             {
